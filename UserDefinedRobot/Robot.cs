@@ -75,8 +75,8 @@ public class Robot : RobotBase {
     }
 
     public override void Loop() {
-        _leftMotor.Go(100);
-        _rightMotor.Go(100);
-        Console.WriteLine("millis: " + Millis());
+        _leftMotor.Go(-100);
+        _rightMotor.Go(-100);
+        // Console.WriteLine("millis: " + Millis());
     }
 }

@@ -9,6 +9,34 @@
         Height="450"
         Width="800">
     <Grid>
-
+        <Canvas Height="800"
+                Width="800"
+                Background="#cccccc">
+            <Path Stroke="Black"
+                  Fill="Gray"
+                  Data="M 0 -10 L 0 10 L 5 0 L 0 -10"
+                  Margin="400,400,0,0"
+                  x:Name="cursor">
+                <Path.RenderTransform>
+                    <RotateTransform Angle="-90"
+                            x:Name="rotation"/>
+                </Path.RenderTransform>
+            </Path>
+            <Line X1="400"
+                  Y1="400"
+                  X2="800"
+                  Y2="800"
+                  Stroke="Black"/>
+            <Line X1="400"
+                  Y1="400"
+                  X2="400"
+                  Y2="800"
+                  Stroke="Black"/>
+            <Line X1="400"
+                  Y1="400"
+                  X2="800"
+                  Y2="400"
+                  Stroke="Black"/>
+        </Canvas>
     </Grid>
 </Window>
