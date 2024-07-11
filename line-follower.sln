@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserDefinedRobot", "UserDef
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSuite", "TestSuite\TestSuite.csproj", "{253B7CB9-BDE6-4B69-BBCC-C5D006C07A4B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorConsoleApp", "SimulatorConsoleApp\SimulatorConsoleApp.csproj", "{DD96ACB8-0D93-4FE8-A761-D3BED5F21634}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{253B7CB9-BDE6-4B69-BBCC-C5D006C07A4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{253B7CB9-BDE6-4B69-BBCC-C5D006C07A4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{253B7CB9-BDE6-4B69-BBCC-C5D006C07A4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD96ACB8-0D93-4FE8-A761-D3BED5F21634}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD96ACB8-0D93-4FE8-A761-D3BED5F21634}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD96ACB8-0D93-4FE8-A761-D3BED5F21634}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD96ACB8-0D93-4FE8-A761-D3BED5F21634}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
