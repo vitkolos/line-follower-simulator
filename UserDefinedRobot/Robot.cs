@@ -75,12 +75,11 @@ public class Robot : RobotBase {
     }
 
     public override void Loop() {
+        _leftMotor.Go(100);
 
-        if (_sensors.Read(3)) {
-            _leftMotor.Go(0);
+        if (!_sensors.Read(3)) {
             _rightMotor.Go(0);
         } else {
-            _leftMotor.Go(100);
             _rightMotor.Go(100);
         }
         // Console.WriteLine("millis: " + Millis());
