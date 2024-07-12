@@ -12,16 +12,35 @@
         <Canvas Height="800"
                 Width="800"
                 Background="#cccccc">
+            <!-- https://yqnn.github.io/svg-path-editor/ -->
             <Path Stroke="Black"
                   Fill="Gray"
-                  Data="M 0 -10 L 0 10 L 5 0 L 0 -10"
+                  Data="M 15 -10 V 10 M 10 -10 V 10 H -20 V -10 H 10 M 0 -10 V 10 M -2 0 H 2"
                   Margin="400,400,0,0"
                   x:Name="cursor">
                 <Path.RenderTransform>
-                    <RotateTransform Angle="-90"
-                            x:Name="rotation"/>
+                    <TransformGroup>
+                        <RotateTransform Angle="-90"
+                                         x:Name="rotation"/>
+                    </TransformGroup>
                 </Path.RenderTransform>
             </Path>
+
+            <Path x:Name="sensor0"
+                  Stroke="Red"
+                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
+            <Path x:Name="sensor1"
+                  Stroke="Red"
+                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
+            <Path x:Name="sensor2"
+                  Stroke="Red"
+                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
+            <Path x:Name="sensor3"
+                  Stroke="Red"
+                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
+            <Path x:Name="sensor4"
+                  Stroke="Red"
+                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
             <Line X1="400"
                   Y1="400"
                   X2="800"

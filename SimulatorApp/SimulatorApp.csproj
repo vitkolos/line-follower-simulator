@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\SimulatorConsoleApp\SimulatorConsoleApp.csproj" />
     <ProjectReference Include="..\CoreLibrary\CoreLibrary.csproj" />
     <ProjectReference Include="..\UserDefinedRobot\UserDefinedRobot.csproj" />
   </ItemGroup>

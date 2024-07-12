@@ -63,7 +63,7 @@ public class Robot : RobotBase {
     private const int ButtonPin = 2;
     private const int LedPin = 11;
 
-    public override (int, int) MotorsMicroseconds => (_leftMotor.Microseconds, _rightMotor.Microseconds);
+    public override MotorsState MotorsMicroseconds => new(_leftMotor.Microseconds, _rightMotor.Microseconds);
     public override int FirstSensorPin => 3;
 
     public override void Setup() {
@@ -75,8 +75,14 @@ public class Robot : RobotBase {
     }
 
     public override void Loop() {
-        _leftMotor.Go(-100);
-        _rightMotor.Go(-100);
+
+        if (_sensors.Read(3)) {
+            _leftMotor.Go(0);
+            _rightMotor.Go(0);
+        } else {
+            _leftMotor.Go(100);
+            _rightMotor.Go(100);
+        }
         // Console.WriteLine("millis: " + Millis());
     }
 }

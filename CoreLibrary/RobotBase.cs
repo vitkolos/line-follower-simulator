@@ -1,27 +1,24 @@
 ﻿namespace CoreLibrary;
 
 public abstract class RobotBase {
-    private const int PinCount = 32;
+    public const int PinCount = 32;
     public const int SensorsCount = 5;
 
     private long _millis = 0;
     private readonly PMode[] _pinModes = new PMode[PinCount];
-    private readonly bool[] _pinValues = new bool[PinCount];
+    private readonly bool[] _pinValues = new bool[PinCount]; // fixme
 
     public long Millis() => _millis;
 
-    public void AddMillis(int toBeAdded) { // fixme
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:RemoveUnusedPrivateMember", Justification = "called using reflection from the simulation app")]
+    private void AddMillis(int toBeAdded) {
         _millis += toBeAdded;
     }
 
     public abstract void Setup();
-
     public abstract void Loop();
-
-    public abstract (int, int) MotorsMicroseconds { get; }
-
+    public abstract MotorsState MotorsMicroseconds { get; }
     public abstract int FirstSensorPin { get; }
-
 
     public void PinMode(int pin, PMode mode) {
         _pinModes[pin] = mode;
@@ -59,3 +56,5 @@ public abstract class Servo {
         Microseconds = value;
     }
 }
+
+public readonly record struct MotorsState(int Left, int Right);
