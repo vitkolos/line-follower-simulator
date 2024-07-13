@@ -79,9 +79,12 @@ public class Robot : RobotBase {
 
         if (!_sensors.Read(3)) {
             _rightMotor.Go(0);
+            // DigitalWrite(LedPin, true);
         } else {
             _rightMotor.Go(100);
         }
+        
+        DigitalWrite(LedPin, DigitalRead(ButtonPin));
         // Console.WriteLine("millis: " + Millis());
     }
 }

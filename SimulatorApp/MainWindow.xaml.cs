@@ -53,6 +53,7 @@ public partial class MainWindow : Window {
 
     private void CanvasClicked(object sender, MouseEventArgs e) {
         var canvas = (Canvas)sender;
+        var pinControlsContainer = (Panel)FindName("pins");
         Point positionClicked = e.GetPosition(canvas);
         var robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
 
@@ -66,7 +67,7 @@ public partial class MainWindow : Window {
         }
 
         if (_map is not null) {
-            _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, _scaleIcons, _scaleSpeed, _sensorOffset);
+            _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, pinControlsContainer, _scaleIcons, _scaleSpeed, _sensorOffset);
             _sim.Run();
         }
     }

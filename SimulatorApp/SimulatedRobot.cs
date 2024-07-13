@@ -26,13 +26,6 @@ class SimulatedRobot {
     private readonly float[] _sensorAngles = new float[RobotBase.SensorsCount];
     private readonly float[] _sensorDistances = new float[RobotBase.SensorsCount];
 
-    private void PrepareSensorPositions(float sensorDistanceX) {
-        for (int i = 0; i < RobotBase.SensorsCount; i++) {
-            _sensorDistances[i] = (float)Math.Sqrt(sensorDistanceX * sensorDistanceX + SensorDistancesY[i] * SensorDistancesY[i]);
-            _sensorAngles[i] = (float)Math.Atan(SensorDistancesY[i] / sensorDistanceX);
-        }
-    }
-
     public SimulatedRobot(RobotBase robot, RobotPosition initialPosition, Image map, float mapScale, float robotScale, float speedScale, float sensorOffset) {
         Robot = robot;
         Position = initialPosition;
@@ -71,9 +64,49 @@ class SimulatedRobot {
 
     public IReadOnlyList<PositionHistoryItem> GetPositionHistory() => _positionHistory;
 
+    public IEnumerable<int> GetButtons() {
+        for (int i = 0; i < RobotBase.PinCount; i++) {
+            if (_pinModes[i] == PMode.InputPullup) {
+                yield return i;
+            }
+        }
+    }
+
+    public IEnumerable<int> GetLeds() {
+        for (int i = 0; i < RobotBase.PinCount; i++) {
+            if (_pinModes[i] == PMode.Output) {
+                yield return i;
+            }
+        }
+    }
+
+    public bool LedStatus(int pin) {
+        if (_pinModes[pin] == PMode.Output) {
+            return _pinValues[pin];
+        } else {
+            throw new InvalidOperationException("this pin is not an Output");
+        }
+    }
+
+    public void SetButton(int pin, bool down) {
+        if (_pinModes[pin] == PMode.InputPullup) {
+            // pin is true <=> button is released
+            _pinValues[pin] = !down;
+        } else {
+            throw new InvalidOperationException("this pin is not an InputPullup");
+        }
+    }
+
     private void MovePosition(int elapsedMillis) {
         Position = GetRobotPosition(Position, Robot.MotorsMicroseconds, elapsedMillis, _robotScale, _speedScale);
         _positionHistory.Add(new PositionHistoryItem(Position, _currentTime));
+    }
+
+    private void PrepareSensorPositions(float sensorDistanceX) {
+        for (int i = 0; i < RobotBase.SensorsCount; i++) {
+            _sensorDistances[i] = (float)Math.Sqrt(sensorDistanceX * sensorDistanceX + SensorDistancesY[i] * SensorDistancesY[i]);
+            _sensorAngles[i] = (float)Math.Atan(SensorDistancesY[i] / sensorDistanceX);
+        }
     }
 
     private void CheckSensors() {

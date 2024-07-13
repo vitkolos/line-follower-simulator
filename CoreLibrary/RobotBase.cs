@@ -22,6 +22,10 @@ public abstract class RobotBase {
 
     public void PinMode(int pin, PMode mode) {
         _pinModes[pin] = mode;
+
+        if (mode == PMode.InputPullup) {
+            _pinValues[pin] = true;
+        }
     }
 
     public bool DigitalRead(int pin) {

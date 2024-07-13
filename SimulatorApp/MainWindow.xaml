@@ -8,11 +8,13 @@
         Title="MainWindow"
         Height="450"
         Width="800">
-    <Grid>
+    <StackPanel>
         <Canvas
             Background="#cccccc"
             x:Name="canvas"
-            MouseDown="CanvasClicked">
-        </Canvas>
-    </Grid>
+            MouseDown="CanvasClicked"/>
+        <WrapPanel
+            x:Name="pins"
+            Background="AliceBlue"/>
+    </StackPanel>
 </Window>
