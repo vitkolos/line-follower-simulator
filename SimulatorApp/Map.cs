@@ -7,24 +7,26 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
-class Map {
+class Map : IDisposable {
     private readonly Canvas _canvas;
     public float Scale { get; private set; }
     public Bitmap Bitmap;
+    private readonly Image _image;
 
-    public Map(Canvas canvas, string path, float size) {
+    public Map(Canvas canvas, string path, float size, float zoom) {
         _canvas = canvas;
+        PrepareCanvas(size, zoom);
+        _image = new Image();
         DrawMap(path, size);
         Bitmap = LoadBitmap(path);
-        ScaleCanvas();
         Scale = GetMapScale(size);
     }
 
     private void DrawMap(string mapFilePath, float mapSize) {
-        Image image = (Image)_canvas.FindName("image");
-        image.MaxHeight = mapSize;
-        image.MaxWidth = mapSize;
-        image.Source = new BitmapImage(new Uri(mapFilePath));
+        _image.MaxHeight = mapSize;
+        _image.MaxWidth = mapSize;
+        _image.Source = new BitmapImage(new Uri(mapFilePath));
+        _canvas.Children.Add(_image);
     }
 
     private static Bitmap LoadBitmap(string mapFilePath) {
@@ -37,10 +39,14 @@ class Map {
         return bmp;
     }
 
-    private void ScaleCanvas() {
+    private void PrepareCanvas(float size, float zoom) {
+        _canvas.Height = size;
+        _canvas.Width = size;
         _canvas.RenderTransform = new ScaleTransform {
-            ScaleX = 3,
-            ScaleY = 3
+            ScaleX = zoom,
+            ScaleY = zoom,
+            CenterX = size / 2,
+            CenterY = size / 2
         };
     }
 
@@ -50,5 +56,10 @@ class Map {
         } else {
             return 1f;
         }
+    }
+
+    public void Dispose() {
+        _canvas.Children.Remove(_image);
+        Bitmap.Dispose();
     }
 }

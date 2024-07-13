@@ -9,48 +9,10 @@
         Height="450"
         Width="800">
     <Grid>
-        <Canvas Height="800"
-                Width="800"
-                Background="#cccccc"
-                x:Name="canvas"
-                MouseDown="CanvasClicked">
-            <Image
-                x:Name="image"/>
-
-            <!-- https://yqnn.github.io/svg-path-editor/ -->
-            <Path Stroke="Black"
-                  Fill="Gray"
-                  Data="M 15 -10 V 10 M 10 -10 V 10 H -20 V -10 H 10 M 0 -10 V 10 M -2 0 H 2"
-                  x:Name="cursor"
-                  StrokeThickness="1">
-                <Path.RenderTransform>
-                    <TransformGroup>
-                        <RotateTransform Angle="-90"
-                                         x:Name="rotation"/>
-                        <ScaleTransform ScaleX="1"
-                                        ScaleY="1"/>
-                    </TransformGroup>
-                </Path.RenderTransform>
-            </Path>
-
-            <Polyline x:Name="polyline"
-                      Stroke="Black"/>
-
-            <Path x:Name="sensor0"
-                  Stroke="Red"
-                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
-            <Path x:Name="sensor1"
-                  Stroke="Red"
-                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
-            <Path x:Name="sensor2"
-                  Stroke="Red"
-                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
-            <Path x:Name="sensor3"
-                  Stroke="Red"
-                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
-            <Path x:Name="sensor4"
-                  Stroke="Red"
-                  Data="M 0 0 m 1 0 a 1 1 90 1 0 -2 0 a 1 1 90 1 0 2 0"/>
+        <Canvas
+            Background="#cccccc"
+            x:Name="canvas"
+            MouseDown="CanvasClicked">
         </Canvas>
     </Grid>
 </Window>

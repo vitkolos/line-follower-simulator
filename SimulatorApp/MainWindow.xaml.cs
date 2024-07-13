@@ -8,7 +8,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Bitmap = System.Drawing.Bitmap;
 
 using CoreLibrary;
 
@@ -30,94 +29,45 @@ public partial class MainWindow : Window {
             a) run simulation in real time
             b) run simulation in parallel, then display result
         */
-        // Image image = (Image)FindName("image");
-        // image.MaxHeight = _maxDimension;
-        // image.MaxWidth = _maxDimension;
-        // image.Source = new BitmapImage(new Uri(_imagePath));
-        // var st = new ScaleTransform {
-        //     ScaleX = 3,
-        //     ScaleY = 3
-        // };
-        var canvas = (Canvas)FindName("canvas");
-        // canvas.RenderTransform = st;
-        _map = new Map(canvas, _imagePath, _maxDimension);
+
+        string imagePath = @"C:\Users\vitko\Downloads\track.png";
+        LoadMap(imagePath);
     }
 
-    // private int _token = 0;
-    private readonly string _imagePath = @"C:\Users\vitko\Downloads\track.png";
-    private readonly float _maxDimension = 200f; // fixme (make robot larger)
-    private readonly Map _map;
-
-    private async void RunRobot(RobotPosition initialPosition) {
-        // int token = ++_token;
-        int centerX = 0;
-        int centerY = 0;
-        Path path = (Path)FindName("cursor");
-
-        RotateTransform rotation = (RotateTransform)path.FindName("rotation");
-        rotation.Angle = 0;
-
-        int interval = 10;
-        Bitmap bmp;
-
-        using (var str = System.IO.File.OpenRead(_imagePath)) {
-            bmp = new Bitmap(str);
-        }
-
-
-        float mapScale = 1f;
-
-        if (Math.Max(bmp.Width, bmp.Height) > _maxDimension) {
-            mapScale = _maxDimension / Math.Max(bmp.Width, bmp.Height);
-        }
-
-        var pr = new SimulatedRobot(new Robot(), initialPosition, bmp, mapScale);
-
-        for (int i = 0; i < 800; i++) {
-            await Task.Delay(interval);
-
-            // if (_token != token) {
-            //     break;
-            // }
-
-            pr.MoveNext(interval);
-            Canvas.SetLeft(path, centerX + pr.Position.X);
-            Canvas.SetTop(path, centerY - pr.Position.Y);
-            rotation.Angle = -pr.Position.Rotation / Math.PI * 180;
-
-            for (int j = 0; j < RobotBase.SensorsCount; j++) {
-                Path sensor = (Path)FindName("sensor" + j);
-                Canvas.SetLeft(sensor, centerX + pr.SensorPositions[j].X);
-                Canvas.SetTop(sensor, centerY - pr.SensorPositions[j].Y);
-                sensor.Stroke = pr.Robot.DigitalRead(pr.Robot.FirstSensorPin + j) ? Brushes.LightGreen : Brushes.Red;
-            }
-        }
-
-        var history = pr.GetPositionHistory();
-        var points = new PointCollection();
-
-        foreach (var item in history) {
-            points.Add(new Point(item.Position.X, -item.Position.Y));
-        }
-
-        Polyline polyline = (Polyline)FindName("polyline");
-        polyline.Points = points;
-    }
-
+    private Map? _map;
     private RealTimeSimulation? _sim;
+    private Polyline? _oldPolyline;
+    private float _scaleIcons;
+    private float _scaleSpeed;
+    private float _sensorOffset;
+
+    private void LoadMap(string imagePath) {
+        var canvas = (Canvas)FindName("canvas");
+        float zoom = 1f;
+        float maxDimension = 800f;
+        _scaleIcons = 4f;
+        _scaleSpeed = 1.5f;
+        _sensorOffset = 10f;
+        _map = new Map(canvas, imagePath, maxDimension, zoom);
+    }
 
     private void CanvasClicked(object sender, MouseEventArgs e) {
         var canvas = (Canvas)sender;
-        System.Windows.Point positionClicked = e.GetPosition(canvas);
-        // Console.WriteLine(bitmap.GetPixel((int)(positionClicked.X / image.ActualWidth * bitmap.Width), (int)(positionClicked.Y / image.ActualHeight * bitmap.Height)));
-        RobotPosition robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
-        // RunRobot(robotPosition);
+        Point positionClicked = e.GetPosition(canvas);
+        var robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
+
+        if (_oldPolyline is not null) {
+            canvas.Children.Remove(_oldPolyline);
+        }
 
         if (_sim is not null) {
+            _oldPolyline = _sim.DrawTrajectory();
             _sim.Dispose();
         }
 
-        _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map);
-        _sim.Run();
+        if (_map is not null) {
+            _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, _scaleIcons, _scaleSpeed, _sensorOffset);
+            _sim.Run();
+        }
     }
 }
