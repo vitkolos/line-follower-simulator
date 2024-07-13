@@ -30,25 +30,26 @@ public partial class MainWindow : Window {
             a) run simulation in real time
             b) run simulation in parallel, then display result
         */
-        Image image = (Image)FindName("image");
-        image.MaxHeight = _maxDimension;
-        image.MaxWidth = _maxDimension;
-        image.Source = new BitmapImage(new Uri(_imagePath));
-        var st = new ScaleTransform {
-            ScaleX = 3,
-            ScaleY = 3
-        };
+        // Image image = (Image)FindName("image");
+        // image.MaxHeight = _maxDimension;
+        // image.MaxWidth = _maxDimension;
+        // image.Source = new BitmapImage(new Uri(_imagePath));
+        // var st = new ScaleTransform {
+        //     ScaleX = 3,
+        //     ScaleY = 3
+        // };
         var canvas = (Canvas)FindName("canvas");
-        canvas.RenderTransform = st;
+        // canvas.RenderTransform = st;
+        _map = new Map(canvas, _imagePath, _maxDimension);
     }
 
-    private int _token = 0;
+    // private int _token = 0;
     private readonly string _imagePath = @"C:\Users\vitko\Downloads\track.png";
     private readonly float _maxDimension = 200f; // fixme (make robot larger)
-
+    private readonly Map _map;
 
     private async void RunRobot(RobotPosition initialPosition) {
-        int token = ++_token;
+        // int token = ++_token;
         int centerX = 0;
         int centerY = 0;
         Path path = (Path)FindName("cursor");
@@ -75,9 +76,9 @@ public partial class MainWindow : Window {
         for (int i = 0; i < 800; i++) {
             await Task.Delay(interval);
 
-            if (_token != token) {
-                break;
-            }
+            // if (_token != token) {
+            //     break;
+            // }
 
             pr.MoveNext(interval);
             Canvas.SetLeft(path, centerX + pr.Position.X);
@@ -103,11 +104,20 @@ public partial class MainWindow : Window {
         polyline.Points = points;
     }
 
-    private void TrackClicked(object sender, MouseEventArgs e) {
-        var image = (Image)sender;
-        System.Windows.Point positionClicked = e.GetPosition(image);
+    private RealTimeSimulation? _sim;
+
+    private void CanvasClicked(object sender, MouseEventArgs e) {
+        var canvas = (Canvas)sender;
+        System.Windows.Point positionClicked = e.GetPosition(canvas);
         // Console.WriteLine(bitmap.GetPixel((int)(positionClicked.X / image.ActualWidth * bitmap.Width), (int)(positionClicked.Y / image.ActualHeight * bitmap.Height)));
         RobotPosition robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
-        RunRobot(robotPosition);
+        // RunRobot(robotPosition);
+
+        if (_sim is not null) {
+            _sim.Dispose();
+        }
+
+        _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map);
+        _sim.Run();
     }
 }

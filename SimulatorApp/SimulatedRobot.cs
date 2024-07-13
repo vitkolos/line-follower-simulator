@@ -6,15 +6,6 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
-
-class SimulationCore {
-    // private Image _map;
-    // private RobotPosition _startingPosition;
-    public SimulatedRobot[] Robots = new SimulatedRobot[1];
-
-
-}
-
 class SimulatedRobot {
     public RobotBase Robot { get; }
     public RobotPosition Position { get; private set; }
@@ -131,7 +122,3 @@ class SimulatedRobot {
         return newPosition;
     }
 }
-
-readonly record struct SensorPosition(float X, float Y);
-readonly record struct RobotPosition(float X, float Y, float Rotation);
-readonly record struct PositionHistoryItem(RobotPosition Position, int Time);

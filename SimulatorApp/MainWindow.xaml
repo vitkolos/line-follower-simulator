@@ -12,10 +12,10 @@
         <Canvas Height="800"
                 Width="800"
                 Background="#cccccc"
-                x:Name="canvas">
+                x:Name="canvas"
+                MouseDown="CanvasClicked">
             <Image
-                x:Name="image"
-                MouseDown="TrackClicked"/>
+                x:Name="image"/>
 
             <!-- https://yqnn.github.io/svg-path-editor/ -->
             <Path Stroke="Black"
