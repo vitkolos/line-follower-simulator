@@ -16,11 +16,24 @@ using UserDefinedRobot;
 namespace SimulatorApp;
 
 class AppState {
-    private Map? _map;
-    private RealTimeSimulation? _realTimeSimulation;
-    private Polyline? _oldPolyline;
-    private float _scaleIcons;
-    private float _scaleSpeed;
-    private float _sensorOffset;
+    private readonly Canvas _canvas;
+    public Map? Map;
+    // private RealTimeSimulation? _realTimeSimulation;
+    // private Polyline? _oldPolyline;
 
+    public AppState(Canvas canvas) {
+        _canvas = canvas;
+    }
+
+    public void LoadMap(string imagePath, float zoom, float size) {
+        if (Map is not null) {
+            Map.Dispose();
+        }
+
+        Map = new Map(_canvas, imagePath, size, zoom);
+    }
+
+    public void StartRealtimeSimulation() {
+        // _realTimeSimulation = new RealTimeSimulation(_canvas, new Robot(), robotPosition, _map, pinControlsContainer, _scaleIcons, _scaleSpeed, _sensorOffset);
+    }
 }

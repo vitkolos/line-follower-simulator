@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
@@ -10,33 +11,38 @@ namespace SimulatorApp;
 class Map : IDisposable {
     private readonly Canvas _canvas;
     public float Scale { get; private set; }
+    public float Size { get; private set; }
     public Bitmap Bitmap;
     private readonly Image _image;
 
     public Map(Canvas canvas, string path, float size, float zoom) {
         _canvas = canvas;
+        Size = size;
         PrepareCanvas(size, zoom);
         _image = new Image();
-        DrawMap(path, size);
-        Bitmap = LoadBitmap(path);
+        BitmapImage bitmapImage = DrawMap(path, size);
+        Bitmap = LoadBitmap(bitmapImage);
         Scale = GetMapScale(size);
     }
 
-    private void DrawMap(string mapFilePath, float mapSize) {
+    private BitmapImage DrawMap(string mapFilePath, float mapSize) {
         _image.MaxHeight = mapSize;
         _image.MaxWidth = mapSize;
-        _image.Source = new BitmapImage(new Uri(mapFilePath));
+        var bitmapImage = new BitmapImage(new Uri(mapFilePath));
+        _image.Source = bitmapImage;
         _canvas.Children.Add(_image);
+        return bitmapImage;
     }
 
-    private static Bitmap LoadBitmap(string mapFilePath) {
-        Bitmap bmp;
-
-        using (var stream = System.IO.File.OpenRead(mapFilePath)) {
-            bmp = new Bitmap(stream);
+    private static Bitmap LoadBitmap(BitmapImage bitmapImage) {
+        // source: https://stackoverflow.com/questions/6484357/converting-bitmapimage-to-bitmap-and-vice-versa
+        using (var outStream = new MemoryStream()) {
+            BitmapEncoder enc = new BmpBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(bitmapImage));
+            enc.Save(outStream);
+            var bitmap = new Bitmap(outStream);
+            return new Bitmap(bitmap);
         }
-
-        return bmp;
     }
 
     private void PrepareCanvas(float size, float zoom) {
@@ -46,7 +52,7 @@ class Map : IDisposable {
             ScaleX = zoom,
             ScaleY = zoom,
             CenterX = size / 2,
-            CenterY = size / 2
+            CenterY = 0
         };
     }
 

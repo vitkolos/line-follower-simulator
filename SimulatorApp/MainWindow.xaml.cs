@@ -30,45 +30,70 @@ public partial class MainWindow : Window {
             b) run simulation in parallel, then display result
         */
 
-        string imagePath = @"C:\Users\vitko\Downloads\track.png";
-        LoadMap(imagePath);
+        WriteDefaultValues();
+        var canvas = (Canvas)FindName("Canvas");
+        _appState = new AppState(canvas);
+        // string imagePath = @"C:\Users\vitko\Downloads\track.png";
+        // LoadMap(imagePath);
     }
 
-    private Map? _map;
-    private RealTimeSimulation? _realTimeSimulation;
-    private Polyline? _oldPolyline;
-    private float _scaleIcons;
-    private float _scaleSpeed;
-    private float _sensorOffset;
+    private readonly AppState _appState;
+    // private Map? _map;
+    // private RealTimeSimulation? _realTimeSimulation;
+    // private Polyline? _oldPolyline;
+    // private float _scaleIcons;
+    // private float _scaleSpeed;
+    // private float _sensorOffset;
 
-    private void LoadMap(string imagePath) {
-        var canvas = (Canvas)FindName("Canvas");
-        float zoom = 1f;
-        float maxDimension = 800f;
-        _scaleIcons = 4f;
-        _scaleSpeed = 1.5f;
-        _sensorOffset = 10f;
-        _map = new Map(canvas, imagePath, maxDimension, zoom);
+    private readonly Dictionary<string, string> _defaultValues = new Dictionary<string, string> {
+        {"TrackFileName", ""},
+        {"CanvasSize", "800"},
+        {"CanvasZoom", "1"},
+        {"RobotX", "100"},
+        {"RobotY", "100"},
+        {"RobotRotation", "45"},
+        {"AssemblyFileName", ""},
+        {"RobotSize", "4"},
+        {"SensorDistance", "10"},
+        {"RobotSpeed", 1.5f.ToString()},
+    };
+
+    private void WriteDefaultValues() {
+        foreach (KeyValuePair<string, string> entry in _defaultValues) {
+            ((TextBox)FindName(entry.Key)).Text = entry.Value;
+        }
+    }
+
+    private string GetTextBoxValue(string name) => ((TextBox)FindName(name)).Text;
+
+    private float GetTextBoxFloat(string name) {
+        var tb = (TextBox)FindName(name);
+        string text = tb.Text;
+        bool result = float.TryParse(text, out float value);
+
+        if (result) {
+            tb.Text = value.ToString();
+            return value;
+        } else {
+            tb.Text = _defaultValues[name];
+            return GetTextBoxFloat(name);
+        }
     }
 
     private void CanvasClicked(object sender, MouseEventArgs e) {
         var canvas = (Canvas)sender;
-        var pinControlsContainer = (Panel)FindName("Pins");
         Point positionClicked = e.GetPosition(canvas);
-        var robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
+        SetCoordinateTextBoxes((float)positionClicked.X, (float)positionClicked.Y);
+    }
 
-        if (_oldPolyline is not null) {
-            canvas.Children.Remove(_oldPolyline);
-        }
+    private void SetCoordinateTextBoxes(float x, float y, float? rotation = null) {
+        if (_appState.Map is not null) {
+            ((TextBox)FindName("RobotX")).Text = double.Round(x, 2).ToString();
+            ((TextBox)FindName("RobotY")).Text = double.Round(_appState.Map.Size - y, 2).ToString();
 
-        if (_realTimeSimulation is not null) {
-            _oldPolyline = _realTimeSimulation.DrawTrajectory();
-            _realTimeSimulation.Dispose();
-        }
-
-        if (_map is not null) {
-            _realTimeSimulation = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, pinControlsContainer, _scaleIcons, _scaleSpeed, _sensorOffset);
-            _realTimeSimulation.Run();
+            if (rotation is not null) {
+                ((TextBox)FindName("RobotRotation")).Text = double.Round(rotation.Value / Math.PI * 180, 2).ToString();
+            }
         }
     }
 
@@ -77,15 +102,32 @@ public partial class MainWindow : Window {
         bool? result = dialog.ShowDialog();
 
         if (result == true) {
-            string filename = dialog.FileName;
-            Console.WriteLine(filename);
+            ((TextBox)FindName("TrackFileName")).Text = dialog.FileName;
+            ShowTrack(sender, e);
         }
     }
 
-    private void ShowTrack(object sender, EventArgs e) { }
-    private void ApplyCanvas(object sender, EventArgs e) { }
-    private void BrowseAssembly(object sender, EventArgs e) { }
-    private void LoadAssembly(object sender, EventArgs e) { }
+    private void ShowTrack(object sender, EventArgs e) {
+        string imagePath = GetTextBoxValue("TrackFileName");
+        float zoom = GetTextBoxFloat("CanvasZoom");
+        float size = GetTextBoxFloat("CanvasSize");
+        _appState.LoadMap(imagePath, zoom, size);
+    }
+
+    private void BrowseAssembly(object sender, EventArgs e) {
+        var dialog = new Microsoft.Win32.OpenFileDialog();
+        bool? result = dialog.ShowDialog();
+
+        if (result == true) {
+            ((TextBox)FindName("AssemblyFileName")).Text = dialog.FileName;
+            LoadAssembly(sender, e);
+        }
+    }
+
+    private void LoadAssembly(object sender, EventArgs e) {
+
+    }
+
     private void ApplyRobot(object sender, EventArgs e) { }
     private void NewSimulation(object sender, EventArgs e) { }
     private void ToggleSimulation(object sender, EventArgs e) { }

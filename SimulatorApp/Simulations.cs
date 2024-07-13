@@ -115,7 +115,7 @@ class RealTimeSimulation : Simulation {
 
     private void RedrawRobot() {
         Canvas.SetLeft(_robotIcon, _simulatedRobot.Position.X);
-        Canvas.SetTop(_robotIcon, -_simulatedRobot.Position.Y);
+        Canvas.SetTop(_robotIcon, _map.Size - _simulatedRobot.Position.Y);
         _rotation.Angle = -_simulatedRobot.Position.Rotation / Math.PI * 180;
 
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
