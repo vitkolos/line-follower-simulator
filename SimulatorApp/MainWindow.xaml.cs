@@ -35,14 +35,14 @@ public partial class MainWindow : Window {
     }
 
     private Map? _map;
-    private RealTimeSimulation? _sim;
+    private RealTimeSimulation? _realTimeSimulation;
     private Polyline? _oldPolyline;
     private float _scaleIcons;
     private float _scaleSpeed;
     private float _sensorOffset;
 
     private void LoadMap(string imagePath) {
-        var canvas = (Canvas)FindName("canvas");
+        var canvas = (Canvas)FindName("Canvas");
         float zoom = 1f;
         float maxDimension = 800f;
         _scaleIcons = 4f;
@@ -53,7 +53,7 @@ public partial class MainWindow : Window {
 
     private void CanvasClicked(object sender, MouseEventArgs e) {
         var canvas = (Canvas)sender;
-        var pinControlsContainer = (Panel)FindName("pins");
+        var pinControlsContainer = (Panel)FindName("Pins");
         Point positionClicked = e.GetPosition(canvas);
         var robotPosition = new RobotPosition((float)positionClicked.X, (float)-positionClicked.Y, 0);
 
@@ -61,14 +61,34 @@ public partial class MainWindow : Window {
             canvas.Children.Remove(_oldPolyline);
         }
 
-        if (_sim is not null) {
-            _oldPolyline = _sim.DrawTrajectory();
-            _sim.Dispose();
+        if (_realTimeSimulation is not null) {
+            _oldPolyline = _realTimeSimulation.DrawTrajectory();
+            _realTimeSimulation.Dispose();
         }
 
         if (_map is not null) {
-            _sim = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, pinControlsContainer, _scaleIcons, _scaleSpeed, _sensorOffset);
-            _sim.Run();
+            _realTimeSimulation = new RealTimeSimulation(canvas, new Robot(), robotPosition, _map, pinControlsContainer, _scaleIcons, _scaleSpeed, _sensorOffset);
+            _realTimeSimulation.Run();
         }
     }
+
+    private void BrowseTrack(object sender, EventArgs e) {
+        var dialog = new Microsoft.Win32.OpenFileDialog();
+        bool? result = dialog.ShowDialog();
+
+        if (result == true) {
+            string filename = dialog.FileName;
+            Console.WriteLine(filename);
+        }
+    }
+
+    private void ShowTrack(object sender, EventArgs e) { }
+    private void ApplyCanvas(object sender, EventArgs e) { }
+    private void BrowseAssembly(object sender, EventArgs e) { }
+    private void LoadAssembly(object sender, EventArgs e) { }
+    private void ApplyRobot(object sender, EventArgs e) { }
+    private void NewSimulation(object sender, EventArgs e) { }
+    private void ToggleSimulation(object sender, EventArgs e) { }
+    private void DrawTrajectory(object sender, EventArgs e) { }
+    private void SimulateParallel(object sender, EventArgs e) { }
 }

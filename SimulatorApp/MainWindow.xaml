@@ -8,13 +8,102 @@
         Title="MainWindow"
         Height="450"
         Width="800">
-    <StackPanel>
-        <Canvas
-            Background="#cccccc"
-            x:Name="canvas"
-            MouseDown="CanvasClicked"/>
-        <WrapPanel
-            x:Name="pins"
-            Background="AliceBlue"/>
-    </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <WrapPanel>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Track:</Label>
+                        <TextBox
+                            Width="300"
+                            Margin="5,0,0,0"
+                            BorderThickness="1,1,0,1"/>
+                        <Button Click="BrowseTrack">Browse…</Button>
+                        <Button
+                            Click="ShowTrack"
+                            Margin="5,0,0,0">Show Track</Button>
+                    </WrapPanel>
+                </Border>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Canvas configuration:</Label>
+                        <Label>height/width</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0">800</TextBox>
+                        <Label>zoom</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0">1</TextBox>
+                        <Button Click="ApplyCanvas">Apply</Button>
+                    </WrapPanel>
+                </Border>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Robot position:</Label>
+                        <Label>X</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0"/>
+                        <Label>Y</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0"/>
+                        <Label>R°</Label>
+                        <TextBox Width="50"/>
+                    </WrapPanel>
+                </Border>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Robot assembly:</Label>
+                        <TextBox
+                            Width="300"
+                            Margin="5,0,0,0"
+                            BorderThickness="1,1,0,1"/>
+                        <Button Click="BrowseAssembly">Browse…</Button>
+                        <Button Click="LoadAssembly"
+                                Margin="5,0,0,0">Load Assembly</Button>
+                    </WrapPanel>
+                </Border>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Robot configuration:</Label>
+                        <Label>size</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0">4</TextBox>
+                        <Label>sensor dist.</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0">10</TextBox>
+                        <Label>speed</Label>
+                        <TextBox
+                            Width="50"
+                            Margin="0,0,5,0">1.5</TextBox>
+                        <Button Click="ApplyRobot">Apply</Button>
+                    </WrapPanel>
+                </Border>
+                <Border Padding="10">
+                    <WrapPanel>
+                        <Label>Available actions:</Label>
+                        <Button Click="NewSimulation"
+                                Margin="5,0">Start</Button>
+                        <Button Click="ToggleSimulation">Pause/Resume</Button>
+                        <Button Click="DrawTrajectory"
+                                Margin="5,0">Draw Trajectory</Button>
+                        <Button Click="SimulateParallel">Run Parallel Simulations</Button>
+                    </WrapPanel>
+                </Border>
+            </WrapPanel>
+            <Canvas
+                Background="White"
+                x:Name="Canvas"
+                MouseDown="CanvasClicked"/>
+            <WrapPanel>
+                <Label Margin="10,5,5,5">Arduino pins:</Label>
+                <WrapPanel
+                    x:Name="Pins"/>
+            </WrapPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

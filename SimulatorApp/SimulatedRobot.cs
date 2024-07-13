@@ -80,12 +80,8 @@ class SimulatedRobot {
         }
     }
 
-    public bool LedStatus(int pin) {
-        if (_pinModes[pin] == PMode.Output) {
-            return _pinValues[pin];
-        } else {
-            throw new InvalidOperationException("this pin is not an Output");
-        }
+    public bool PinStatus(int pin) {
+        return _pinValues[pin];
     }
 
     public void SetButton(int pin, bool down) {

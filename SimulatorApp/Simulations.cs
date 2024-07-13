@@ -40,7 +40,7 @@ class RealTimeSimulation : Simulation {
         _map = map;
         _simulatedRobot = new SimulatedRobot(robot, initialPosition, _map.Bitmap, _map.Scale, scaleIcons, scaleSpeed, sensorOffset);
         PrepareIcons(scaleIcons, sensorOffset);
-        UpdateLeds();
+        ShowPinStatus();
         RedrawRobot();
         SetupPinControls();
     }
@@ -56,7 +56,7 @@ class RealTimeSimulation : Simulation {
             }
 
             _simulatedRobot.MoveNext(IterationIntervalMs);
-            UpdateLeds();
+            ShowPinStatus();
             RedrawRobot();
         }
     }
@@ -78,9 +78,7 @@ class RealTimeSimulation : Simulation {
         foreach (int pin in _simulatedRobot.GetButtons()) {
             var control = new Button {
                 Width = 100,
-                Padding = new Thickness(5),
-                Margin = new Thickness(5),
-                Content = "pin " + pin
+                Margin = new Thickness(5)
             };
             var pc = new PinControl(pin, false, control);
             control.PreviewMouseDown += ButtonPress;
@@ -127,26 +125,26 @@ class RealTimeSimulation : Simulation {
         }
     }
 
-    private void UpdateLeds() {
+    private void ShowPinStatus() {
         foreach (PinControl pinControl in _pinControls) {
+            var control = (ContentControl)pinControl.Control;
+            bool status = _simulatedRobot.PinStatus(pinControl.Pin);
+            string statusText = status ? "HIGH" : "LOW";
+            control.Content = $"pin {pinControl.Pin} {statusText}";
+
             if (pinControl.IsLed) {
-                var label = (Label)pinControl.Control;
-                bool status = _simulatedRobot.LedStatus(pinControl.Pin);
-                string statusText = status ? "HIGH" : "LOW";
-                label.Content = $"pin {pinControl.Pin} {statusText}";
-                label.Background = status ? Brushes.Pink : Brushes.LightGray;
+                control.Background = status ? Brushes.Pink : Brushes.LightGray;
             }
         }
     }
 
-    private void ButtonPress(object sender, MouseButtonEventArgs e) {
-        var pc = (PinControl)((Button)sender).Tag;
-        _simulatedRobot.SetButton(pc.Pin, true);
-    }
+    private void ButtonPress(object sender, MouseButtonEventArgs e) => ButtonAction(sender, true);
+    private void ButtonRelease(object sender, MouseButtonEventArgs e) => ButtonAction(sender, false);
 
-    private void ButtonRelease(object sender, MouseButtonEventArgs e) {
-        var pc = (PinControl)((Button)sender).Tag;
-        _simulatedRobot.SetButton(pc.Pin, false);
+    private void ButtonAction(object sender, bool press) {
+        var btn = (Button)sender;
+        var pc = (PinControl)btn.Tag;
+        _simulatedRobot.SetButton(pc.Pin, press);
     }
 
     public Polyline DrawTrajectory() {
