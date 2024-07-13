@@ -173,6 +173,10 @@ class RealTimeSimulation : Simulation {
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
             _canvas.Children.Remove(_sensorIcons[i]);
         }
+
+        foreach (PinControl pinControl in _pinControls) {
+            _pinControlsContainer.Children.Remove(pinControl.Control);
+        }
     }
 }
 
