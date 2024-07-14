@@ -1,17 +1,9 @@
-using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Runtime.Loader;
+using System.Reflection;
 
 using CoreLibrary;
-
-using UserDefinedRobot; // fixme
 
 namespace SimulatorApp;
 
@@ -24,7 +16,8 @@ class AppState {
     private Type _robotType;
     private RealTimeSimulation? _realTimeSimulation;
     private Polyline? _oldTrajectory;
-    private RobotSetup _robotSetup;
+    public RobotSetup RobotSetup { get; set; }
+    private AssemblyLoadContext? _assemblyLoadContext;
 
     public AppState(Canvas canvas, Panel pinControlsContainer, Button stateButton) {
         _canvas = canvas;
@@ -42,8 +35,16 @@ class AppState {
     }
 
     public void LoadAssembly(string assemblyPath) {
-        // todo
-        _robotType = typeof(Robot);
+        _assemblyLoadContext?.Unload();
+        _assemblyLoadContext = new AssemblyLoadContext(null, true);
+        Assembly assembly;
+
+        using (var stream = System.IO.File.OpenRead(assemblyPath)) {
+            assembly = _assemblyLoadContext.LoadFromStream(stream);
+        }
+
+        IEnumerable<Type> robotTypes = from type in assembly.GetTypes() where type.BaseType == typeof(RobotBase) select type;
+        _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
     }
 
     public void InitializeRealtimeSimulation() {
@@ -53,13 +54,9 @@ class AppState {
 
         if (Map is not null) {
             var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
-            _realTimeSimulation = new RealTimeSimulation(_canvas, robot, _robotSetup, Map, _pinControlsContainer);
-            _realTimeSimulation.StateChange += running => { _stateButton.Content = running ? "Pause" : "Run"; };
+            _realTimeSimulation = new RealTimeSimulation(_canvas, robot, RobotSetup, Map, _pinControlsContainer);
+            _realTimeSimulation.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
         }
-    }
-
-    public void SetRobotSetup(RobotSetup robotSetup) {
-        _robotSetup = robotSetup;
     }
 
     public void ToggleSimulation() {

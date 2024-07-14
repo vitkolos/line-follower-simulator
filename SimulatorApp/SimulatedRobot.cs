@@ -112,7 +112,8 @@ class SimulatedRobot {
                 Y = (float)(Position.Y + _robotScale * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
             };
             int pixelX = (int)(sensorPosition.X / _mapScale);
-            int pixelY = _map.Height - 1 - (int)(sensorPosition.Y / _mapScale);
+            int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)(sensorPosition.Y / _mapScale);
+            // Math.Max returns "canvas height"
 
             if (pixelX >= 0 && pixelY >= 0 && pixelX < _map.Width && pixelY < _map.Height) {
                 // returns true for white, false for black

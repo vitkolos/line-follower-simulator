@@ -9,10 +9,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using CoreLibrary;
-
-using UserDefinedRobot;
-
 namespace SimulatorApp;
 
 /// <summary>
@@ -35,24 +31,19 @@ public partial class MainWindow : Window {
         var pinControlsContainer = (Panel)FindName("Pins");
         var stateButton = (Button)FindName("StateButton");
         _appState = new AppState(canvas, pinControlsContainer, stateButton);
+        LoadRobotSetupFromControls();
     }
 
     private readonly AppState _appState;
-    // private Map? _map;
-    // private RealTimeSimulation? _realTimeSimulation;
-    // private Polyline? _oldPolyline;
-    // private float _scaleIcons;
-    // private float _scaleSpeed;
-    // private float _sensorOffset;
 
     private readonly Dictionary<string, string> _defaultValues = new Dictionary<string, string> {
-        {"TrackFileName", ""},
+        {"TrackFileName", @"C:\Users\vitko\Downloads\track.png"},
         {"CanvasSize", "800"},
         {"CanvasZoom", "1"},
         {"RobotX", "100"},
         {"RobotY", "100"},
         {"RobotRotation", "45"},
-        {"AssemblyFileName", ""},
+        {"AssemblyFileName", @"D:\OneDrive - Univerzita Karlova\Code\Csharp\semestr4\line-follower\UserDefinedRobot\bin\Release\net8.0\UserDefinedRobot.dll"},
         {"RobotSize", "4"},
         {"SensorDistance", "10"},
         {"RobotSpeed", 1.5f.ToString()},
@@ -80,21 +71,36 @@ public partial class MainWindow : Window {
         }
     }
 
-    private void CanvasClicked(object sender, MouseEventArgs e) {
-        var canvas = (Canvas)sender;
-        Point positionClicked = e.GetPosition(canvas);
-        SetCoordinateTextBoxes((float)positionClicked.X, (float)positionClicked.Y);
+    private void SetPositionByMouse(MouseEventArgs e) {
+        if (_appState.Map is not null) {
+            var canvas = (Canvas)FindName("Canvas");
+            Point positionClicked = e.GetPosition(canvas);
+            SetCoordinateTextBoxes((float)positionClicked.X, _appState.Map.Size - (float)positionClicked.Y);
+        }
     }
 
     private void SetCoordinateTextBoxes(float x, float y, float? rotation = null) {
-        if (_appState.Map is not null) {
-            ((TextBox)FindName("RobotX")).Text = double.Round(x, 2).ToString();
-            ((TextBox)FindName("RobotY")).Text = double.Round(_appState.Map.Size - y, 2).ToString();
+        ((TextBox)FindName("RobotX")).Text = double.Round(x, 2).ToString();
+        ((TextBox)FindName("RobotY")).Text = double.Round(y, 2).ToString();
 
-            if (rotation is not null) {
-                ((TextBox)FindName("RobotRotation")).Text = double.Round(rotation.Value / Math.PI * 180, 2).ToString();
-            }
+        if (rotation is not null) {
+            ((TextBox)FindName("RobotRotation")).Text = double.Round(rotation.Value / Math.PI * 180, 2).ToString();
         }
+    }
+
+    private void LoadRobotSetupFromControls() {
+        _appState.RobotSetup = new RobotSetup {
+            Position = new RobotPosition {
+                X = GetTextBoxFloat("RobotX"),
+                Y = GetTextBoxFloat("RobotY"),
+                Rotation = (float)(GetTextBoxFloat("RobotRotation") / 180 * Math.PI)
+            },
+            Config = new RobotConfig {
+                Size = GetTextBoxFloat("RobotSize"),
+                SensorDistance = GetTextBoxFloat("SensorDistance"),
+                Speed = GetTextBoxFloat("RobotSpeed")
+            }
+        };
     }
 
     private void BrowseTrack(object sender, EventArgs e) {
@@ -116,7 +122,9 @@ public partial class MainWindow : Window {
     }
 
     private void BrowseAssembly(object sender, EventArgs e) {
-        var dialog = new Microsoft.Win32.OpenFileDialog();
+        var dialog = new Microsoft.Win32.OpenFileDialog {
+            Filter = "Assemblies (.dll)|*.dll"
+        };
         bool? result = dialog.ShowDialog();
 
         if (result == true) {
@@ -130,20 +138,17 @@ public partial class MainWindow : Window {
         _appState.LoadAssembly(assemblyPath);
     }
 
+    private void CanvasClicked(object sender, MouseEventArgs e) {
+        SetPositionByMouse(e);
+
+        if (!_appState.SimulationRunning) {
+            LoadRobotSetupFromControls();
+            _appState.InitializeRealtimeSimulation();
+        }
+    }
+
     private void ShowRobot(object sender, EventArgs e) {
-        var robotSetup = new RobotSetup {
-            Position = new RobotPosition {
-                X = GetTextBoxFloat("RobotX"),
-                Y = GetTextBoxFloat("RobotY"),
-                Rotation = (float)(GetTextBoxFloat("RobotRotation") / 180 * Math.PI)
-            },
-            Config = new RobotConfig {
-                Size = GetTextBoxFloat("RobotSize"),
-                SensorDistance = GetTextBoxFloat("SensorDistance"),
-                Speed = GetTextBoxFloat("RobotSpeed")
-            }
-        };
-        _appState.SetRobotSetup(robotSetup);
+        LoadRobotSetupFromControls();
         _appState.InitializeRealtimeSimulation();
     }
 

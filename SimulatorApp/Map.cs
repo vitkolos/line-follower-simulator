@@ -28,7 +28,12 @@ class Map : IDisposable {
     private BitmapImage DrawMap(string mapFilePath, float mapSize) {
         _image.MaxHeight = mapSize;
         _image.MaxWidth = mapSize;
-        var bitmapImage = new BitmapImage(new Uri(mapFilePath));
+        var bitmapImage = new BitmapImage();
+        bitmapImage.BeginInit();
+        bitmapImage.UriSource = new Uri(mapFilePath);
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+        bitmapImage.EndInit();
         _image.Source = bitmapImage;
         _canvas.Children.Add(_image);
         return bitmapImage;
@@ -57,11 +62,7 @@ class Map : IDisposable {
     }
 
     private float GetMapScale(float mapSize) {
-        if (Math.Max(Bitmap.Width, Bitmap.Height) > mapSize) {
-            return mapSize / Math.Max(Bitmap.Width, Bitmap.Height);
-        } else {
-            return 1f;
-        }
+        return mapSize / Math.Max(Bitmap.Width, Bitmap.Height);
     }
 
     public void Dispose() {
