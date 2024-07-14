@@ -6,7 +6,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Collections.Generic;
-using Bitmap = System.Drawing.Bitmap;
 
 using CoreLibrary;
 using System.Drawing.Drawing2D;
@@ -43,7 +42,7 @@ class LiveSimulation : Simulation {
         _canvas = canvas;
         _pinControlsContainer = pinControlsContainer;
         _map = map;
-        _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.Bitmap, _map.Scale);
+        _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.BoolBitmap, _map.Scale);
         PrepareIcons(robotSetup.Config.Size, robotSetup.Config.SensorDistance);
         RedrawRobot();
         SetupPinControls();
@@ -124,11 +123,13 @@ class LiveSimulation : Simulation {
     }
 
     private void RedrawRobot() {
+        // #coordinates
         Canvas.SetLeft(_robotIcon, _simulatedRobot.Position.X);
         Canvas.SetTop(_robotIcon, _map.Size - _simulatedRobot.Position.Y);
         _rotation.Angle = -_simulatedRobot.Position.Rotation / Math.PI * 180;
 
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
+            // #coordinates
             Canvas.SetLeft(_sensorIcons[i], _simulatedRobot.SensorPositions[i].X);
             Canvas.SetTop(_sensorIcons[i], _map.Size - _simulatedRobot.SensorPositions[i].Y);
             _sensorIcons[i].Stroke = _simulatedRobot.Robot.DigitalRead(_simulatedRobot.Robot.FirstSensorPin + i) ? Brushes.Green : Brushes.Red;
@@ -162,12 +163,13 @@ class LiveSimulation : Simulation {
         var points = new PointCollection();
 
         foreach (var item in history) {
+            // #coordinates
             points.Add(new Point(item.Position.X, _map.Size - item.Position.Y));
         }
 
         var polyline = new Polyline {
             Points = points,
-            Stroke = Brushes.DarkBlue
+            Stroke = Brushes.Red
         };
         _canvas.Children.Add(polyline);
 

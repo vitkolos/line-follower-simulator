@@ -12,7 +12,7 @@ class Map : IDisposable {
     private readonly Canvas _canvas;
     public float Scale { get; private set; }
     public float Size { get; private set; }
-    public Bitmap Bitmap;
+    public BoolBitmap BoolBitmap;
     private readonly Image _image;
 
     public Map(Canvas canvas, string path, float size, float zoom) {
@@ -21,7 +21,8 @@ class Map : IDisposable {
         PrepareCanvas(size, zoom);
         _image = new Image();
         BitmapImage bitmapImage = DrawMap(path, size);
-        Bitmap = LoadBitmap(bitmapImage);
+        Bitmap bitmap = LoadBitmap(bitmapImage);
+        BoolBitmap = new BoolBitmap(bitmap);
         Scale = GetMapScale(size);
     }
 
@@ -62,11 +63,11 @@ class Map : IDisposable {
     }
 
     private float GetMapScale(float mapSize) {
-        return mapSize / Math.Max(Bitmap.Width, Bitmap.Height);
+        return mapSize / Math.Max(BoolBitmap.Width, BoolBitmap.Height);
     }
 
     public void Dispose() {
         _canvas.Children.Remove(_image);
-        Bitmap.Dispose();
+        BoolBitmap.Dispose();
     }
 }

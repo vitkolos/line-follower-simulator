@@ -9,16 +9,16 @@ namespace SimulatorApp;
 class SimulatedRobot {
     public RobotBase Robot { get; }
     public RobotPosition Position { get; private set; }
+    public Random? Random { get; }
     public SensorPosition[] SensorPositions = new SensorPosition[RobotBase.SensorsCount];
     private int _currentTime = 0;
     private readonly List<PositionHistoryItem> _positionHistory;
     private readonly Action<int> _addMillis;
     private readonly PMode[] _pinModes;
     private readonly bool[] _pinValues;
-    private readonly Bitmap _map;
+    private readonly BoolBitmap _map;
+    private readonly RobotConfig _robotConfig;
     private readonly float _mapScale;
-    private readonly float _robotScale;
-    private readonly float _speedScale;
 
     private const float WheelDistance = 20f; // 20f => 20 px
     private const float SpeedCoefficient = 0.5f; // 1f means that 1600 (1500+100) microseconds equals 100 px/s; 2f & 1600 us => 200 px/s etc.
@@ -26,13 +26,13 @@ class SimulatedRobot {
     private readonly float[] _sensorAngles = new float[RobotBase.SensorsCount];
     private readonly float[] _sensorDistances = new float[RobotBase.SensorsCount];
 
-    public SimulatedRobot(RobotBase robot, RobotSetup robotSetup, Image map, float mapScale) {
+    public SimulatedRobot(RobotBase robot, RobotSetup robotSetup, BoolBitmap map, float mapScale, Random? random = null) {
         Robot = robot;
+        Random = random;
         Position = robotSetup.Position;
-        _map = new Bitmap(map);
+        _map = map;
         _mapScale = mapScale;
-        _robotScale = robotSetup.Config.Size;
-        _speedScale = robotSetup.Config.Speed;
+        _robotConfig = robotSetup.Config;
         _positionHistory = [new PositionHistoryItem(robotSetup.Position, 0)];
 
         MethodInfo addMillis = typeof(RobotBase).GetMethod("AddMillis", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -42,7 +42,7 @@ class SimulatedRobot {
         FieldInfo pinValues = typeof(RobotBase).GetField("_pinValues", BindingFlags.NonPublic | BindingFlags.Instance)!;
         _pinValues = (bool[])pinValues.GetValue(Robot)!;
 
-        PrepareSensorPositions(robotSetup.Config.SensorDistance);
+        PrepareSensorPositions(_robotConfig.SensorDistance);
 
         Robot.Setup();
         CheckSensors();
@@ -94,7 +94,7 @@ class SimulatedRobot {
     }
 
     private void MovePosition(int elapsedMillis) {
-        Position = GetRobotPosition(Position, Robot.MotorsMicroseconds, elapsedMillis, _robotScale, _speedScale);
+        Position = GetRobotPosition(Position, Robot.MotorsMicroseconds, elapsedMillis, _robotConfig.Size, _robotConfig.Speed);
         _positionHistory.Add(new PositionHistoryItem(Position, _currentTime));
     }
 
@@ -108,16 +108,17 @@ class SimulatedRobot {
     private void CheckSensors() {
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
             var sensorPosition = new SensorPosition {
-                X = (float)(Position.X + _robotScale * _sensorDistances[i] * Math.Cos(Position.Rotation + _sensorAngles[i])),
-                Y = (float)(Position.Y + _robotScale * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
+                X = (float)(Position.X + _robotConfig.Size * _sensorDistances[i] * Math.Cos(Position.Rotation + _sensorAngles[i])),
+                Y = (float)(Position.Y + _robotConfig.Size * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
             };
+            // #coordinates
             int pixelX = (int)(sensorPosition.X / _mapScale);
             int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)(sensorPosition.Y / _mapScale);
             // Math.Max returns "canvas height"
 
             if (pixelX >= 0 && pixelY >= 0 && pixelX < _map.Width && pixelY < _map.Height) {
                 // returns true for white, false for black
-                _pinValues[Robot.FirstSensorPin + i] = Math.Round(_map.GetPixel(pixelX, pixelY).GetBrightness()) == 1;
+                _pinValues[Robot.FirstSensorPin + i] = _map[pixelX, pixelY];
             } else {
                 // "table" is white
                 _pinValues[Robot.FirstSensorPin + i] = true;

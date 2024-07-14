@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace SimulatorApp;
 
@@ -32,6 +33,11 @@ public partial class MainWindow : Window {
         var stateButton = (Button)FindName("StateButton");
         _appState = new AppState(canvas, pinControlsContainer, stateButton);
         LoadRobotSetupFromControls();
+
+        // dev
+        // ShowTrack(null!, EventArgs.Empty);
+        // LoadAssembly(null!, EventArgs.Empty);
+        // _appState.SimulateParallel();
     }
 
     private readonly AppState _appState;
@@ -75,6 +81,7 @@ public partial class MainWindow : Window {
         if (_appState.Map is not null) {
             var canvas = (Canvas)FindName("Canvas");
             Point positionClicked = e.GetPosition(canvas);
+            // #coordinates
             SetCoordinateTextBoxes((float)positionClicked.X, _appState.Map.Size - (float)positionClicked.Y);
         }
     }
@@ -114,11 +121,15 @@ public partial class MainWindow : Window {
     }
 
     private void ShowTrack(object sender, EventArgs e) {
+        var sw = new Stopwatch();
+        sw.Start();
         string imagePath = GetTextBoxValue("TrackFileName");
         float zoom = GetTextBoxFloat("CanvasZoom");
         float size = GetTextBoxFloat("CanvasSize");
         ((Panel)FindName("CanvasContainer")).Height = size * zoom;
         _appState.LoadMap(imagePath, zoom, size);
+        sw.Stop();
+        Console.WriteLine("image loading: " + sw.Elapsed);
     }
 
     private void BrowseAssembly(object sender, EventArgs e) {
@@ -167,8 +178,12 @@ public partial class MainWindow : Window {
             }
         }
     }
+
     private void DrawTrajectory(object sender, EventArgs e) {
         _appState.DrawTrajectory();
     }
-    private void SimulateParallel(object sender, EventArgs e) { }
+
+    private void SimulateParallel(object sender, EventArgs e) {
+        _appState.SimulateParallel();
+    }
 }

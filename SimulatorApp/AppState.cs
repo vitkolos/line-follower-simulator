@@ -15,7 +15,7 @@ class AppState {
     public bool SimulationRunning => _liveSimulation?.Running ?? false;
     private Type _robotType;
     private LiveSimulation? _liveSimulation;
-    private Polyline? _oldTrajectory;
+    private IReadOnlyList<Polyline> _oldTrajectories;
     public RobotSetup RobotSetup { get; set; }
     private AssemblyLoadContext? _assemblyLoadContext;
 
@@ -24,6 +24,7 @@ class AppState {
         _pinControlsContainer = pinControlsContainer;
         _stateButton = stateButton;
         _robotType = typeof(DummyRobot);
+        _oldTrajectories = Array.Empty<Polyline>();
     }
 
     public void LoadMap(string imagePath, float zoom, float size) {
@@ -52,7 +53,7 @@ class AppState {
             _liveSimulation.Dispose();
         }
 
-        if (Map is not null) {
+        if (Map is not null && Map.BoolBitmap is not null) {
             var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
             _liveSimulation = new LiveSimulation(_canvas, robot, RobotSetup, Map, _pinControlsContainer);
             _liveSimulation.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
@@ -70,11 +71,14 @@ class AppState {
     }
 
     public void DrawTrajectory() {
-        if (_oldTrajectory is not null) {
-            _canvas.Children.Remove(_oldTrajectory);
-            _oldTrajectory = null;
+        if (_oldTrajectories.Count > 0) {
+            foreach (var item in _oldTrajectories) {
+                _canvas.Children.Remove(item);
+            }
+
+            _oldTrajectories = Array.Empty<Polyline>();
         } else if (_liveSimulation is not null) {
-            _oldTrajectory = _liveSimulation.DrawTrajectory();
+            _oldTrajectories = [_liveSimulation.DrawTrajectory()];
         }
     }
 
@@ -83,6 +87,19 @@ class AppState {
             return _liveSimulation.RobotPosition;
         } else {
             return null;
+        }
+    }
+
+    public void SimulateParallel() {
+        if (_oldTrajectories.Count > 0) {
+            foreach (var item in _oldTrajectories) {
+                _canvas.Children.Remove(item);
+            }
+
+            _oldTrajectories = Array.Empty<Polyline>();
+        } else if (Map is not null && Map.BoolBitmap is not null) {
+            var sim = new ParallelSimulation(_canvas, _robotType, RobotSetup, Map);
+            _oldTrajectories = sim.DrawTrajectories();
         }
     }
 }

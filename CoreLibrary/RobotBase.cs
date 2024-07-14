@@ -6,7 +6,7 @@ public abstract class RobotBase {
 
     private long _millis = 0;
     private readonly PMode[] _pinModes = new PMode[PinCount];
-    private readonly bool[] _pinValues = new bool[PinCount]; // fixme
+    private readonly bool[] _pinValues = new bool[PinCount];
 
     public long Millis() => _millis;
 

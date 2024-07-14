@@ -88,7 +88,7 @@ public class Robot : RobotBase {
     private const bool follow = true;
 
     bool[] sensorsBlack = new bool[SensorsCount];
-    bool ride = false;
+    bool ride = true; // modified
     direction_t direction = direction_t.FORWARD;
     int directionCounter = 0;
     raceState_t raceState = raceState_t.BEFORE;
