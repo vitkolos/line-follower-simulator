@@ -121,6 +121,12 @@
                             <Label>Parallel simulation:</Label>
                             <Button Click="SimulateParallel"
                                     Margin="5,0">Run</Button>
+                            <ProgressBar Width="100"
+                                         Height="10"
+                                         Name="ProgressBar"
+                                         IsIndeterminate="True"
+                                         Margin="5,0"
+                                         Visibility="Hidden"/>
                         </WrapPanel>
                     </Border>
                 </WrapPanel>
@@ -130,7 +136,8 @@
                     <Canvas
                         Background="White"
                         x:Name="Canvas"
-                        MouseDown="CanvasClicked"/>
+                        MouseLeftButtonDown="CanvasClicked"
+                        MouseLeftButtonUp="CanvasReleased"/>
                 </StackPanel>
             </Border>
             <WrapPanel>

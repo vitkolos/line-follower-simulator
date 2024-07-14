@@ -116,8 +116,8 @@ class SimulatedRobot {
                 Y = (float)(Position.Y + _robotConfig.Size * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
             };
             // #coordinates
-            int pixelX = (int)(sensorPosition.X / _mapScale);
-            int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)(sensorPosition.Y / _mapScale);
+            int pixelX = (int)Math.Round(sensorPosition.X / _mapScale);
+            int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)Math.Round(sensorPosition.Y / _mapScale);
             // Math.Max returns "canvas height"
 
             if (pixelX >= 0 && pixelY >= 0 && pixelX < _map.Width && pixelY < _map.Height) {
@@ -129,7 +129,7 @@ class SimulatedRobot {
             }
 
             if (Random is not null && ParallelSimulation.RandomSensors) {
-                if (Random.NextDouble() < Math.Pow(10, -ParallelSimulation.SensorQuality)) {
+                if (Random.NextDouble() < ParallelSimulation.SensorErrorLikelihood) {
                     _pinValues[Robot.FirstSensorPin + i] = !_pinValues[Robot.FirstSensorPin + i];
                 }
             }

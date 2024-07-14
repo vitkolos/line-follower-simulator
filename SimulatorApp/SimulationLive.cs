@@ -24,8 +24,8 @@ class LiveSimulation : Simulation {
     private readonly Path _robotIcon = new();
     private readonly Path[] _sensorIcons = new Path[RobotBase.SensorsCount];
     private readonly RotateTransform _rotation = new();
-    private const int IterationLimit = 100000;
-    private const int IterationIntervalMs = 10;
+    private const int IterationLimit = 100_000;
+    private const int IterationIntervalMs = 6;
     private bool _disposed = false;
     public bool Running {
         get => _running;
@@ -64,6 +64,8 @@ class LiveSimulation : Simulation {
             ShowPinStatus();
             RedrawRobot();
         }
+
+        Running = false;
     }
 
     public void Pause() {

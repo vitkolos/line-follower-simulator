@@ -18,6 +18,8 @@ class ParallelSimulation : Simulation {
     private readonly Map _map;
     private readonly int _seed;
     private readonly Random _random;
+    private readonly Type _robotType;
+    private readonly RobotSetup _robotSetup;
     private readonly SimulatedRobot[] _simulatedRobots = new SimulatedRobot[RobotCount];
 
     // random flags
@@ -29,11 +31,10 @@ class ParallelSimulation : Simulation {
     private const int IterationIntervalMs = 6;
     private const int IterationIntervalDifference = 3;
     public const int MotorDifference = 20;
-    public const double SensorQuality = 5; // the higher, the better
-    private const int MinPointDistanceMs = 100; // to prevent UI from lagging
+    public const double SensorErrorLikelihood = 0.000_01;
+    private const int MinPointDistanceMs = 200; // to prevent UI from lagging
     private const int IterationCount = 10000;
     private const int RobotCount = 50;
-    // private const int RobotCount = 500;
 
     public ParallelSimulation(Canvas canvas, Type robotType, RobotSetup robotSetup, Map map) {
         _canvas = canvas;
@@ -41,19 +42,9 @@ class ParallelSimulation : Simulation {
         var rng = new Random();
         _seed = rng.Next();
         _random = new Random(_seed);
-
+        _robotType = robotType;
+        _robotSetup = robotSetup;
         Console.WriteLine("seed: " + _seed);
-        PrepareRobots(robotType, robotSetup);
-
-        var sw = new Stopwatch();
-        sw.Start();
-
-        for (int i = 0; i < RobotCount; i++) {
-            RunRobot(i);
-        }
-
-        sw.Stop();
-        Console.WriteLine("running: " + sw.Elapsed);
     }
 
     private static float RandomFloatPM(Random random) {
@@ -64,23 +55,23 @@ class ParallelSimulation : Simulation {
         return random.Next(-value, value + 1);
     }
 
-    private void PrepareRobots(Type robotType, RobotSetup robotSetup) {
+    public void Prepare() {
         var sw = new Stopwatch();
         sw.Start();
 
         _map.BoolBitmap.PopulateCache();
 
         for (int i = 0; i < RobotCount; i++) {
-            var robot = (RobotBase)Activator.CreateInstance(robotType)!;
+            var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
             var robotRng = new Random(_random.Next());
             var modifiedSetup = RandomPosition ? new RobotSetup {
-                Config = robotSetup.Config,
+                Config = _robotSetup.Config,
                 Position = new RobotPosition {
-                    X = robotSetup.Position.X + RandomFloatPM(robotRng) * 10,
-                    Y = robotSetup.Position.Y + RandomFloatPM(robotRng) * 10,
-                    Rotation = robotSetup.Position.Rotation + RandomFloatPM(robotRng) / 4
+                    X = _robotSetup.Position.X + RandomFloatPM(robotRng) * 10,
+                    Y = _robotSetup.Position.Y + RandomFloatPM(robotRng) * 10,
+                    Rotation = _robotSetup.Position.Rotation + RandomFloatPM(robotRng) / 4
                 }
-            } : robotSetup;
+            } : _robotSetup;
             var boolBitmap = new BoolBitmap(_map.BoolBitmap);
             _simulatedRobots[i] = new SimulatedRobot(robot, modifiedSetup, boolBitmap, _map.Scale, robotRng);
         }
@@ -89,10 +80,22 @@ class ParallelSimulation : Simulation {
         Console.WriteLine("preparation: " + sw.Elapsed);
     }
 
-    private void RunRobot(int index) {
+    public void Run() {
+        var sw = new Stopwatch();
+        sw.Start();
+
+        Parallel.For(0, RobotCount, RunRobotByIndex);
+
+        sw.Stop();
+        Console.WriteLine("running: " + sw.Elapsed);
+    }
+
+    private void RunRobotByIndex(int index) => RunRobot(_simulatedRobots[index]);
+
+    public static void RunRobot(SimulatedRobot simulatedRobot) {
         for (int i = 0; i < IterationCount; i++) {
-            int randomIntervalDifference = RandomInterval ? RandomIntPM(_simulatedRobots[index].Random!, IterationIntervalDifference) : 0;
-            _simulatedRobots[index].MoveNext(IterationIntervalMs + randomIntervalDifference);
+            int randomIntervalDifference = RandomInterval ? RandomIntPM(simulatedRobot.Random!, IterationIntervalDifference) : 0;
+            simulatedRobot.MoveNext(IterationIntervalMs + randomIntervalDifference);
         }
     }
 
@@ -123,6 +126,7 @@ class ParallelSimulation : Simulation {
     }
 
     public override void Dispose() {
+        // fixme
         throw new NotImplementedException();
     }
 }

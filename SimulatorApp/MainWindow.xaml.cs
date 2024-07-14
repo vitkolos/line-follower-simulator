@@ -77,15 +77,6 @@ public partial class MainWindow : Window {
         }
     }
 
-    private void SetPositionByMouse(MouseEventArgs e) {
-        if (_appState.Map is not null) {
-            var canvas = (Canvas)FindName("Canvas");
-            Point positionClicked = e.GetPosition(canvas);
-            // #coordinates
-            SetCoordinateTextBoxes((float)positionClicked.X, _appState.Map.Size - (float)positionClicked.Y);
-        }
-    }
-
     private void SetCoordinateTextBoxes(float x, float y, float? rotation = null) {
         ((TextBox)FindName("RobotX")).Text = double.Round(x, 2).ToString();
         ((TextBox)FindName("RobotY")).Text = double.Round(y, 2).ToString();
@@ -145,12 +136,34 @@ public partial class MainWindow : Window {
         _appState.LoadAssembly(assemblyPath);
     }
 
-    private void CanvasClicked(object sender, MouseEventArgs e) {
-        SetPositionByMouse(e);
+    private int _canvasClickX = 0;
 
-        if (!_appState.SimulationRunning) {
-            LoadRobotSetupFromControls();
-            _appState.InitializeLiveSimulation();
+    private void CanvasClicked(object sender, MouseEventArgs e) {
+        if (_appState.Map is not null) {
+            var canvas = (Canvas)FindName("Canvas");
+            Point positionClicked = e.GetPosition(canvas);
+            _canvasClickX = (int)Math.Round(positionClicked.X);
+            // #coordinates
+            SetCoordinateTextBoxes((float)positionClicked.X, _appState.Map.Size - (float)positionClicked.Y);
+
+            if (!_appState.SimulationRunning) {
+                LoadRobotSetupFromControls();
+                _appState.InitializeLiveSimulation();
+            }
+        }
+    }
+
+    private void CanvasReleased(object sender, MouseEventArgs e) {
+        if (_appState.Map is not null && !_appState.SimulationRunning) {
+            var canvas = (Canvas)FindName("Canvas");
+            Point positionClicked = e.GetPosition(canvas);
+            var canvasReleaseX = (int)Math.Round(positionClicked.X);
+
+            if (Math.Abs(_canvasClickX - canvasReleaseX) < 300) {
+                ((TextBox)FindName("RobotRotation")).Text = ((float)Math.Round(GetTextBoxFloat("RobotRotation")) + _canvasClickX - canvasReleaseX).ToString();
+                LoadRobotSetupFromControls();
+                _appState.InitializeLiveSimulation();
+            }
         }
     }
 
@@ -180,6 +193,7 @@ public partial class MainWindow : Window {
     }
 
     private void SimulateParallel(object sender, EventArgs e) {
-        _appState.SimulateParallel();
+        var pb = (ProgressBar)FindName("ProgressBar");
+        _appState.SimulateParallel(pb);
     }
 }

@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using System.Runtime.Loader;
@@ -90,7 +91,7 @@ class AppState {
         }
     }
 
-    public void SimulateParallel() {
+    public async void SimulateParallel(ProgressBar progressBar) {
         if (_oldTrajectories.Count > 0) {
             foreach (var item in _oldTrajectories) {
                 _canvas.Children.Remove(item);
@@ -98,8 +99,16 @@ class AppState {
 
             _oldTrajectories = Array.Empty<Polyline>();
         } else if (Map is not null && Map.BoolBitmap is not null) {
+            progressBar.Visibility = Visibility.Visible;
             var sim = new ParallelSimulation(_canvas, _robotType, RobotSetup, Map);
+
+            await Task.Run(() => {
+                sim.Prepare();
+                sim.Run();
+            });
+
             _oldTrajectories = sim.DrawTrajectories();
+            progressBar.Visibility = Visibility.Hidden;
         }
     }
 }
