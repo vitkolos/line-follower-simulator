@@ -13,9 +13,10 @@ class AppState {
     private readonly Panel _pinControlsContainer;
     private readonly Button _stateButton;
     public Map? Map;
-    public bool SimulationRunning => _liveSimulation?.Running ?? false;
+    public bool SimulationRunning => _simulationLive?.Running ?? false;
     private Type _robotType;
-    private LiveSimulation? _liveSimulation;
+    private SimulationLive? _simulationLive;
+    private SimulationParallel? _simulationParallel;
     private IReadOnlyList<Polyline> _oldTrajectories;
     public RobotSetup RobotSetup { get; set; }
     private AssemblyLoadContext? _assemblyLoadContext;
@@ -50,65 +51,60 @@ class AppState {
     }
 
     public void InitializeLiveSimulation() {
-        if (_liveSimulation is not null) {
-            _liveSimulation.Dispose();
-        }
+        _simulationLive?.Dispose();
 
-        if (Map is not null && Map.BoolBitmap is not null) {
-            var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
-            _liveSimulation = new LiveSimulation(_canvas, robot, RobotSetup, Map, _pinControlsContainer);
-            _liveSimulation.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
+        if (Map is not null) {
+            _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _pinControlsContainer);
+            _simulationLive.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
         }
     }
 
     public void ToggleSimulation() {
-        if (_liveSimulation is not null) {
+        if (_simulationLive is not null) {
             if (SimulationRunning) {
-                _liveSimulation.Pause();
+                _simulationLive.Pause();
             } else {
-                _liveSimulation.Run();
+                _simulationLive.Run();
             }
         }
+    }
+
+    private void ClearTrajectories() {
+        foreach (var item in _oldTrajectories) {
+            _canvas.Children.Remove(item);
+        }
+
+        _oldTrajectories = [];
     }
 
     public void DrawTrajectory() {
         if (_oldTrajectories.Count > 0) {
-            foreach (var item in _oldTrajectories) {
-                _canvas.Children.Remove(item);
-            }
-
-            _oldTrajectories = Array.Empty<Polyline>();
-        } else if (_liveSimulation is not null) {
-            _oldTrajectories = [_liveSimulation.DrawTrajectory()];
+            ClearTrajectories();
+        } else if (_simulationLive is not null) {
+            _oldTrajectories = _simulationLive.DrawTrajectories();
         }
     }
 
-    public RobotPosition? GetRobotPosition() {
-        if (_liveSimulation is not null) {
-            return _liveSimulation.RobotPosition;
-        } else {
-            return null;
-        }
-    }
+    public RobotPosition? GetRobotPosition() => _simulationLive?.RobotPosition;
 
     public async void SimulateParallel(ProgressBar progressBar) {
         if (_oldTrajectories.Count > 0) {
-            foreach (var item in _oldTrajectories) {
-                _canvas.Children.Remove(item);
-            }
-
-            _oldTrajectories = Array.Empty<Polyline>();
-        } else if (Map is not null && Map.BoolBitmap is not null) {
+            ClearTrajectories();
+        } else if (_simulationParallel is not null) {
+            _simulationParallel.Dispose();
+            _simulationParallel = null;
+        } else if (Map is not null) {
             progressBar.Visibility = Visibility.Visible;
-            var sim = new ParallelSimulation(_canvas, _robotType, RobotSetup, Map);
+            _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
 
             await Task.Run(() => {
-                sim.Prepare();
-                sim.Run();
+                _simulationParallel?.Prepare();
+                _simulationParallel?.Run();
             });
 
-            _oldTrajectories = sim.DrawTrajectories();
+            _oldTrajectories = _simulationParallel?.DrawTrajectories() ?? [];
             progressBar.Visibility = Visibility.Hidden;
+            _simulationParallel = null;
         }
     }
 }

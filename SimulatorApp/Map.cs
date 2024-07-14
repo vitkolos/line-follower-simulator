@@ -4,8 +4,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Controls;
 using Bitmap = System.Drawing.Bitmap;
 
-using CoreLibrary;
-
 namespace SimulatorApp;
 
 class Map : IDisposable {

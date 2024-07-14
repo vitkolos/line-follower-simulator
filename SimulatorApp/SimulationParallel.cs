@@ -1,21 +1,12 @@
-using System.Reflection;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Controls;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq.Expressions;
 
 using CoreLibrary;
 
 namespace SimulatorApp;
 
-// inconsistency 1: robotType
-class ParallelSimulation : Simulation {
-    private readonly Canvas _canvas;
-    private readonly Map _map;
+class SimulationParallel : Simulation {
     private readonly int _seed;
     private readonly Random _random;
     private readonly Type _robotType;
@@ -33,12 +24,11 @@ class ParallelSimulation : Simulation {
     public const int MotorDifference = 20;
     public const double SensorErrorLikelihood = 0.000_01;
     private const int MinPointDistanceMs = 200; // to prevent UI from lagging
-    private const int IterationCount = 10000;
+    private const int IterationCount = 300_000;
+    // private const int IterationCount = 10_000;
     private const int RobotCount = 50;
 
-    public ParallelSimulation(Canvas canvas, Type robotType, RobotSetup robotSetup, Map map) {
-        _canvas = canvas;
-        _map = map;
+    public SimulationParallel(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup) : base(canvas, map) {
         var rng = new Random();
         _seed = rng.Next();
         _random = new Random(_seed);
@@ -56,12 +46,15 @@ class ParallelSimulation : Simulation {
     }
 
     public void Prepare() {
-        var sw = new Stopwatch();
-        sw.Start();
-
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        Running = true;
         _map.BoolBitmap.PopulateCache();
 
         for (int i = 0; i < RobotCount; i++) {
+            if (!Running || _disposed) {
+                break;
+            }
+
             var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
             var robotRng = new Random(_random.Next());
             var modifiedSetup = RandomPosition ? new RobotSetup {
@@ -76,30 +69,30 @@ class ParallelSimulation : Simulation {
             _simulatedRobots[i] = new SimulatedRobot(robot, modifiedSetup, boolBitmap, _map.Scale, robotRng);
         }
 
-        sw.Stop();
-        Console.WriteLine("preparation: " + sw.Elapsed);
+        Running = false;
     }
 
     public void Run() {
-        var sw = new Stopwatch();
-        sw.Start();
-
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        Running = true;
         Parallel.For(0, RobotCount, RunRobotByIndex);
-
-        sw.Stop();
-        Console.WriteLine("running: " + sw.Elapsed);
+        Running = false;
     }
 
     private void RunRobotByIndex(int index) => RunRobot(_simulatedRobots[index]);
 
-    public static void RunRobot(SimulatedRobot simulatedRobot) {
+    private void RunRobot(SimulatedRobot simulatedRobot) {
         for (int i = 0; i < IterationCount; i++) {
+            if (!Running || _disposed) {
+                break;
+            }
+
             int randomIntervalDifference = RandomInterval ? RandomIntPM(simulatedRobot.Random!, IterationIntervalDifference) : 0;
             simulatedRobot.MoveNext(IterationIntervalMs + randomIntervalDifference);
         }
     }
 
-    public IReadOnlyList<Polyline> DrawTrajectories() {
+    public override IReadOnlyList<Polyline> DrawTrajectories() {
         var polylines = new Polyline[RobotCount];
 
         for (int i = 0; i < RobotCount; i++) {
@@ -126,7 +119,7 @@ class ParallelSimulation : Simulation {
     }
 
     public override void Dispose() {
-        // fixme
-        throw new NotImplementedException();
+        _disposed = true;
+        Running = false; // race condition
     }
 }

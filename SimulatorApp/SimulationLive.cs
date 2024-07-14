@@ -1,47 +1,30 @@
-using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Controls;
-using System.Collections.Generic;
 
 using CoreLibrary;
-using System.Drawing.Drawing2D;
 
 namespace SimulatorApp;
 
-class LiveSimulation : Simulation {
+class SimulationLive : Simulation {
     // can be started, paused (freezed) and disposed
     // trajectory can be drawed
 
     private readonly SimulatedRobot _simulatedRobot;
-    private readonly Canvas _canvas;
     private readonly Panel _pinControlsContainer;
     private readonly List<PinControl> _pinControls = new();
-    private readonly Map _map;
     private readonly Path _robotIcon = new();
     private readonly Path[] _sensorIcons = new Path[RobotBase.SensorsCount];
     private readonly RotateTransform _rotation = new();
     private const int IterationLimit = 100_000;
     private const int IterationIntervalMs = 6;
-    private bool _disposed = false;
-    public bool Running {
-        get => _running;
-        private set {
-            _running = value;
-            StateChange(value);
-        }
-    }
-    private bool _running = false;
-    public event Action<bool> StateChange = _ => { };
     public RobotPosition RobotPosition => _simulatedRobot.Position;
 
-    public LiveSimulation(Canvas canvas, RobotBase robot, RobotSetup robotSetup, Map map, Panel pinControlsContainer) {
-        _canvas = canvas;
+    public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel pinControlsContainer) : base(canvas, map) {
         _pinControlsContainer = pinControlsContainer;
-        _map = map;
+        var robot = (RobotBase)Activator.CreateInstance(robotType)!;
         _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.BoolBitmap, _map.Scale);
         PrepareIcons(robotSetup.Config.Size, robotSetup.Config.SensorDistance);
         RedrawRobot();
@@ -160,7 +143,7 @@ class LiveSimulation : Simulation {
         _simulatedRobot.SetButton(pc.Pin, press);
     }
 
-    public Polyline DrawTrajectory() {
+    public override IReadOnlyList<Polyline> DrawTrajectories() {
         var history = _simulatedRobot.GetPositionHistory();
         var points = new PointCollection();
 
@@ -175,7 +158,7 @@ class LiveSimulation : Simulation {
         };
         _canvas.Children.Add(polyline);
 
-        return polyline;
+        return [polyline];
     }
 
     public override void Dispose() {

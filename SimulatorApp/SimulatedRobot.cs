@@ -1,6 +1,4 @@
 using System.Reflection;
-using System.Drawing;
-using System.Collections.Generic;
 
 using CoreLibrary;
 
@@ -94,9 +92,9 @@ class SimulatedRobot {
     }
 
     private void MovePosition(int elapsedMillis) {
-        MotorsState motorsMicroseconds = (Random is not null && ParallelSimulation.RandomMotors) ? new MotorsState {
-            Left = Robot.MotorsMicroseconds.Left + ParallelSimulation.RandomIntPM(Random, ParallelSimulation.MotorDifference),
-            Right = Robot.MotorsMicroseconds.Right + ParallelSimulation.RandomIntPM(Random, ParallelSimulation.MotorDifference)
+        MotorsState motorsMicroseconds = (Random is not null && SimulationParallel.RandomMotors) ? new MotorsState {
+            Left = Robot.MotorsMicroseconds.Left + SimulationParallel.RandomIntPM(Random, SimulationParallel.MotorDifference),
+            Right = Robot.MotorsMicroseconds.Right + SimulationParallel.RandomIntPM(Random, SimulationParallel.MotorDifference)
         } : Robot.MotorsMicroseconds;
         Position = GetRobotPosition(Position, motorsMicroseconds, elapsedMillis, _robotConfig.Size, _robotConfig.Speed);
         _positionHistory.Add(new PositionHistoryItem(Position, _currentTime));
@@ -128,8 +126,8 @@ class SimulatedRobot {
                 _pinValues[Robot.FirstSensorPin + i] = true;
             }
 
-            if (Random is not null && ParallelSimulation.RandomSensors) {
-                if (Random.NextDouble() < ParallelSimulation.SensorErrorLikelihood) {
+            if (Random is not null && SimulationParallel.RandomSensors) {
+                if (Random.NextDouble() < SimulationParallel.SensorErrorLikelihood) {
                     _pinValues[Robot.FirstSensorPin + i] = !_pinValues[Robot.FirstSensorPin + i];
                 }
             }
