@@ -33,25 +33,36 @@ class RealTimeSimulation : Simulation {
     private const int IterationLimit = 100000;
     private const int IterationIntervalMs = 10;
     private bool _disposed = false;
+    public bool Running {
+        get => _running;
+        private set {
+            _running = value;
+            StateChange(value);
+        }
+    }
+    private bool _running = false;
+    public event Action<bool> StateChange = _ => { };
+    public RobotPosition RobotPosition => _simulatedRobot.Position;
 
-    public RealTimeSimulation(Canvas canvas, RobotBase robot, RobotPosition initialPosition, Map map, Panel pinControlsContainer, float scaleIcons, float scaleSpeed, float sensorOffset) {
+    public RealTimeSimulation(Canvas canvas, RobotBase robot, RobotSetup robotSetup, Map map, Panel pinControlsContainer) {
         _canvas = canvas;
         _pinControlsContainer = pinControlsContainer;
         _map = map;
-        _simulatedRobot = new SimulatedRobot(robot, initialPosition, _map.Bitmap, _map.Scale, scaleIcons, scaleSpeed, sensorOffset);
-        PrepareIcons(scaleIcons, sensorOffset);
-        ShowPinStatus();
+        _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.Bitmap, _map.Scale);
+        PrepareIcons(robotSetup.Config.Size, robotSetup.Config.SensorDistance);
         RedrawRobot();
         SetupPinControls();
+        ShowPinStatus();
     }
 
     public async void Run() {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        Running = true;
 
         for (int i = 0; i < IterationLimit; i++) {
             await Task.Delay(IterationIntervalMs);
 
-            if (_disposed) {
+            if (!Running) {
                 break;
             }
 
@@ -59,6 +70,10 @@ class RealTimeSimulation : Simulation {
             ShowPinStatus();
             RedrawRobot();
         }
+    }
+
+    public void Pause() {
+        Running = false;
     }
 
     private void SetupPinControls() {
@@ -120,7 +135,7 @@ class RealTimeSimulation : Simulation {
 
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
             Canvas.SetLeft(_sensorIcons[i], _simulatedRobot.SensorPositions[i].X);
-            Canvas.SetTop(_sensorIcons[i], -_simulatedRobot.SensorPositions[i].Y);
+            Canvas.SetTop(_sensorIcons[i], _map.Size - _simulatedRobot.SensorPositions[i].Y);
             _sensorIcons[i].Stroke = _simulatedRobot.Robot.DigitalRead(_simulatedRobot.Robot.FirstSensorPin + i) ? Brushes.Green : Brushes.Red;
         }
     }
@@ -152,7 +167,7 @@ class RealTimeSimulation : Simulation {
         var points = new PointCollection();
 
         foreach (var item in history) {
-            points.Add(new Point(item.Position.X, -item.Position.Y));
+            points.Add(new Point(item.Position.X, _map.Size - item.Position.Y));
         }
 
         var polyline = new Polyline {
@@ -166,6 +181,7 @@ class RealTimeSimulation : Simulation {
 
     public override void Dispose() {
         _disposed = true;
+        Running = false;
         _canvas.Children.Remove(_robotIcon);
 
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
@@ -177,8 +193,6 @@ class RealTimeSimulation : Simulation {
         }
     }
 }
-
-readonly record struct PinControl(int Pin, bool IsLed, Control Control);
 
 // class ParallelSimulation : Simulation {
 //     // private Image _map;

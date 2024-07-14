@@ -10,100 +10,128 @@
         Width="800">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
-            <WrapPanel>
-                <Border Padding="10">
-                    <WrapPanel>
-                        <Label>Track:</Label>
-                        <TextBox
-                            x:Name="TrackFileName"
-                            Width="300"
-                            Margin="5,0,0,0"
-                            BorderThickness="1,1,0,1"/>
-                        <Button Click="BrowseTrack"
-                                Margin="0,0,5,0">Browse…</Button>
-                        <Label>canvas height/width</Label>
-                        <TextBox
-                            x:Name="CanvasSize"
-                            Width="50"
-                            Margin="0,0,5,0"/>
-                        <Label>zoom</Label>
-                        <TextBox
-                            x:Name="CanvasZoom"
-                            Width="50"
-                            Margin="0,0,10,0"/>
-                        <Button Click="ShowTrack">Show Track</Button>
-                    </WrapPanel>
-                </Border>
-                <Border Padding="10">
-                    <WrapPanel>
-                        <Label>Robot position:</Label>
-                        <Label>X</Label>
-                        <TextBox
-                            x:Name="RobotX"
-                            Width="50"
-                            Margin="0,0,5,0"/>
-                        <Label>Y</Label>
-                        <TextBox
-                            x:Name="RobotY"
-                            Width="50"
-                            Margin="0,0,5,0"/>
-                        <Label>R°</Label>
-                        <TextBox x:Name="RobotRotation"
-                                 Width="50"/>
-                    </WrapPanel>
-                </Border>
-                <Border Padding="10">
-                    <WrapPanel>
-                        <Label>Robot assembly:</Label>
-                        <TextBox
-                            x:Name="AssemblyFileName"
-                            Width="300"
-                            Margin="5,0,0,0"
-                            BorderThickness="1,1,0,1"/>
-                        <Button Click="BrowseAssembly">Browse…</Button>
-                        <Button Click="LoadAssembly"
-                                Margin="10,0,0,0">Load Assembly</Button>
-                    </WrapPanel>
-                </Border>
-                <Border Padding="10">
-                    <WrapPanel>
-                        <Label>Robot configuration:</Label>
-                        <Label>size</Label>
-                        <TextBox
-                            x:Name="RobotSize"
-                            Width="50"
-                            Margin="0,0,5,0"/>
-                        <Label>sensor dist.</Label>
-                        <TextBox
-                            x:Name="SensorDistance"
-                            Width="50"
-                            Margin="0,0,5,0"/>
-                        <Label>speed</Label>
-                        <TextBox
-                            x:Name="RobotSpeed"
-                            Width="50"
-                            Margin="0,0,10,0"/>
-                        <Button Click="ApplyRobot">Apply</Button>
-                    </WrapPanel>
-                </Border>
-                <Border Padding="10">
-                    <WrapPanel>
-                        <Label>Available actions:</Label>
-                        <Button Click="NewSimulation"
-                                Margin="5,0">Start</Button>
-                        <Button Click="ToggleSimulation"
-                                Margin="5,0">Pause/Resume</Button>
-                        <Button Click="DrawTrajectory"
-                                Margin="5,0">Draw Trajectory</Button>
-                        <Button Click="SimulateParallel"
-                                Margin="5,0">Run Parallel Simulations</Button>
-                    </WrapPanel>
-                </Border>
-            </WrapPanel>
-            <Canvas
-                Background="White"
-                x:Name="Canvas"
-                MouseDown="CanvasClicked"/>
+            <Border Style="{StaticResource SectionBorder}">
+                <WrapPanel>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Track:</Label>
+                            <TextBox
+                                x:Name="TrackFileName"
+                                Width="300"
+                                Margin="5,0,0,0"
+                                BorderThickness="1,1,0,1"/>
+                            <Button Click="BrowseTrack">Browse…</Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Canvas configuration:</Label>
+                            <Label>height/width</Label>
+                            <TextBox
+                                x:Name="CanvasSize"
+                                Width="50"
+                                Margin="0,0,5,0"/>
+                            <Label>zoom</Label>
+                            <TextBox
+                                x:Name="CanvasZoom"
+                                Width="50"
+                                Margin="0,0,10,0"/>
+                            <Button Click="ShowTrack">Set Track</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Style="{StaticResource SectionBorder}">
+                <WrapPanel>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Robot position:</Label>
+                            <Label>X</Label>
+                            <TextBox
+                                x:Name="RobotX"
+                                Width="50"
+                                Margin="0,0,5,0"/>
+                            <Label>Y</Label>
+                            <TextBox
+                                x:Name="RobotY"
+                                Width="50"
+                                Margin="0,0,5,0"/>
+                            <Label>R°</Label>
+                            <TextBox x:Name="RobotRotation"
+                                     Width="50"/>
+                        </WrapPanel>
+                    </Border>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Robot configuration:</Label>
+                            <Label>size</Label>
+                            <TextBox
+                                x:Name="RobotSize"
+                                Width="50"
+                                Margin="0,0,5,0"/>
+                            <Label>sensor dist.</Label>
+                            <TextBox
+                                x:Name="SensorDistance"
+                                Width="50"
+                                Margin="0,0,5,0"/>
+                            <Label>speed</Label>
+                            <TextBox
+                                x:Name="RobotSpeed"
+                                Width="50"/>
+                            <Button Click="ShowRobot"
+                                    Margin="10,0,0,0">Set Robot</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Style="{StaticResource SectionBorder}">
+                <WrapPanel>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Robot assembly:</Label>
+                            <TextBox
+                                x:Name="AssemblyFileName"
+                                Width="300"
+                                Margin="5,0,0,0"
+                                BorderThickness="1,1,0,1"/>
+                            <Button Click="BrowseAssembly">Browse…</Button>
+                            <Button Click="LoadAssembly"
+                                    Margin="10,0,0,0">Load Assembly</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Style="{StaticResource SectionBorder}">
+                <WrapPanel>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Live simulation:</Label>
+                            <Button Click="NewSimulation"
+                                    Margin="5,0">Initialize</Button>
+                            <Button Click="ToggleSimulation"
+                                    x:Name="StateButton"
+                                    Margin="5,0"
+                                    Width="60">Run</Button>
+                            <Button Click="DrawTrajectory"
+                                    Margin="5,0">Draw Trajectory</Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Padding="10">
+                        <WrapPanel>
+                            <Label>Parallel simulation:</Label>
+                            <Button Click="SimulateParallel"
+                                    Margin="5,0">Run</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Style="{StaticResource SectionBorder}">
+                <StackPanel x:Name="CanvasContainer">
+                    <Canvas
+                        x:Name="Canvas"
+                        MouseDown="CanvasClicked"/>
+                </StackPanel>
+            </Border>
             <WrapPanel>
                 <Label Margin="10,5,5,5">Arduino pins:</Label>
                 <WrapPanel

@@ -32,9 +32,9 @@ public partial class MainWindow : Window {
 
         WriteDefaultValues();
         var canvas = (Canvas)FindName("Canvas");
-        _appState = new AppState(canvas);
-        // string imagePath = @"C:\Users\vitko\Downloads\track.png";
-        // LoadMap(imagePath);
+        var pinControlsContainer = (Panel)FindName("Pins");
+        var stateButton = (Button)FindName("StateButton");
+        _appState = new AppState(canvas, pinControlsContainer, stateButton);
     }
 
     private readonly AppState _appState;
@@ -111,6 +111,7 @@ public partial class MainWindow : Window {
         string imagePath = GetTextBoxValue("TrackFileName");
         float zoom = GetTextBoxFloat("CanvasZoom");
         float size = GetTextBoxFloat("CanvasSize");
+        ((Panel)FindName("CanvasContainer")).Height = size * zoom;
         _appState.LoadMap(imagePath, zoom, size);
     }
 
@@ -125,12 +126,44 @@ public partial class MainWindow : Window {
     }
 
     private void LoadAssembly(object sender, EventArgs e) {
-
+        string assemblyPath = GetTextBoxValue("AssemblyFileName");
+        _appState.LoadAssembly(assemblyPath);
     }
 
-    private void ApplyRobot(object sender, EventArgs e) { }
-    private void NewSimulation(object sender, EventArgs e) { }
-    private void ToggleSimulation(object sender, EventArgs e) { }
-    private void DrawTrajectory(object sender, EventArgs e) { }
+    private void ShowRobot(object sender, EventArgs e) {
+        var robotSetup = new RobotSetup {
+            Position = new RobotPosition {
+                X = GetTextBoxFloat("RobotX"),
+                Y = GetTextBoxFloat("RobotY"),
+                Rotation = (float)(GetTextBoxFloat("RobotRotation") / 180 * Math.PI)
+            },
+            Config = new RobotConfig {
+                Size = GetTextBoxFloat("RobotSize"),
+                SensorDistance = GetTextBoxFloat("SensorDistance"),
+                Speed = GetTextBoxFloat("RobotSpeed")
+            }
+        };
+        _appState.SetRobotSetup(robotSetup);
+        _appState.InitializeRealtimeSimulation();
+    }
+
+    private void NewSimulation(object sender, EventArgs e) {
+        _appState.InitializeRealtimeSimulation();
+    }
+
+    private void ToggleSimulation(object sender, EventArgs e) {
+        _appState.ToggleSimulation();
+
+        if (!_appState.SimulationRunning) {
+            RobotPosition? rp = _appState.GetRobotPosition();
+
+            if (rp is not null) {
+                SetCoordinateTextBoxes(rp.Value.X, rp.Value.Y, rp.Value.Rotation);
+            }
+        }
+    }
+    private void DrawTrajectory(object sender, EventArgs e) {
+        _appState.DrawTrajectory();
+    }
     private void SimulateParallel(object sender, EventArgs e) { }
 }

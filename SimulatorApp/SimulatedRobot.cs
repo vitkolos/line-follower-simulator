@@ -26,14 +26,14 @@ class SimulatedRobot {
     private readonly float[] _sensorAngles = new float[RobotBase.SensorsCount];
     private readonly float[] _sensorDistances = new float[RobotBase.SensorsCount];
 
-    public SimulatedRobot(RobotBase robot, RobotPosition initialPosition, Image map, float mapScale, float robotScale, float speedScale, float sensorOffset) {
+    public SimulatedRobot(RobotBase robot, RobotSetup robotSetup, Image map, float mapScale) {
         Robot = robot;
-        Position = initialPosition;
+        Position = robotSetup.Position;
         _map = new Bitmap(map);
         _mapScale = mapScale;
-        _robotScale = robotScale;
-        _speedScale = speedScale;
-        _positionHistory = [new PositionHistoryItem(initialPosition, 0)];
+        _robotScale = robotSetup.Config.Size;
+        _speedScale = robotSetup.Config.Speed;
+        _positionHistory = [new PositionHistoryItem(robotSetup.Position, 0)];
 
         MethodInfo addMillis = typeof(RobotBase).GetMethod("AddMillis", BindingFlags.NonPublic | BindingFlags.Instance)!;
         _addMillis = addMillis.CreateDelegate<Action<int>>(Robot);
@@ -42,7 +42,7 @@ class SimulatedRobot {
         FieldInfo pinValues = typeof(RobotBase).GetField("_pinValues", BindingFlags.NonPublic | BindingFlags.Instance)!;
         _pinValues = (bool[])pinValues.GetValue(Robot)!;
 
-        PrepareSensorPositions(sensorOffset);
+        PrepareSensorPositions(robotSetup.Config.SensorDistance);
 
         Robot.Setup();
         CheckSensors();
@@ -112,7 +112,7 @@ class SimulatedRobot {
                 Y = (float)(Position.Y + _robotScale * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
             };
             int pixelX = (int)(sensorPosition.X / _mapScale);
-            int pixelY = (int)(-sensorPosition.Y / _mapScale);
+            int pixelY = _map.Height - 1 - (int)(sensorPosition.Y / _mapScale);
 
             if (pixelX >= 0 && pixelY >= 0 && pixelX < _map.Width && pixelY < _map.Height) {
                 // returns true for white, false for black

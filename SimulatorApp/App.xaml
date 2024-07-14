@@ -14,5 +14,12 @@
             <Setter Property="Padding"
                     Value="10,5"/>
         </Style>
+        <Style TargetType="Border"
+               x:Key="SectionBorder">
+            <Setter Property="BorderBrush"
+                    Value="#cccccc"/>
+            <Setter Property="BorderThickness"
+                    Value="0,0,0,1"/>
+        </Style>
     </Application.Resources>
 </Application>
