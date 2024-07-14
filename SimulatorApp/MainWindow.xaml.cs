@@ -121,15 +121,11 @@ public partial class MainWindow : Window {
     }
 
     private void ShowTrack(object sender, EventArgs e) {
-        var sw = new Stopwatch();
-        sw.Start();
         string imagePath = GetTextBoxValue("TrackFileName");
         float zoom = GetTextBoxFloat("CanvasZoom");
         float size = GetTextBoxFloat("CanvasSize");
         ((Panel)FindName("CanvasContainer")).Height = size * zoom;
         _appState.LoadMap(imagePath, zoom, size);
-        sw.Stop();
-        Console.WriteLine("image loading: " + sw.Elapsed);
     }
 
     private void BrowseAssembly(object sender, EventArgs e) {

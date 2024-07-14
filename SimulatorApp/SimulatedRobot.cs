@@ -94,7 +94,11 @@ class SimulatedRobot {
     }
 
     private void MovePosition(int elapsedMillis) {
-        Position = GetRobotPosition(Position, Robot.MotorsMicroseconds, elapsedMillis, _robotConfig.Size, _robotConfig.Speed);
+        MotorsState motorsMicroseconds = (Random is not null && ParallelSimulation.RandomMotors) ? new MotorsState {
+            Left = Robot.MotorsMicroseconds.Left + ParallelSimulation.RandomIntPM(Random, ParallelSimulation.MotorDifference),
+            Right = Robot.MotorsMicroseconds.Right + ParallelSimulation.RandomIntPM(Random, ParallelSimulation.MotorDifference)
+        } : Robot.MotorsMicroseconds;
+        Position = GetRobotPosition(Position, motorsMicroseconds, elapsedMillis, _robotConfig.Size, _robotConfig.Speed);
         _positionHistory.Add(new PositionHistoryItem(Position, _currentTime));
     }
 
@@ -122,6 +126,12 @@ class SimulatedRobot {
             } else {
                 // "table" is white
                 _pinValues[Robot.FirstSensorPin + i] = true;
+            }
+
+            if (Random is not null && ParallelSimulation.RandomSensors) {
+                if (Random.NextDouble() < Math.Pow(10, -ParallelSimulation.SensorQuality)) {
+                    _pinValues[Robot.FirstSensorPin + i] = !_pinValues[Robot.FirstSensorPin + i];
+                }
             }
 
             SensorPositions[i] = sensorPosition;

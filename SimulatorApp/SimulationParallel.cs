@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 
 using CoreLibrary;
-using System.Drawing.Drawing2D;
 
 namespace SimulatorApp;
 
@@ -21,10 +20,20 @@ class ParallelSimulation : Simulation {
     private readonly Random _random;
     private readonly SimulatedRobot[] _simulatedRobots = new SimulatedRobot[RobotCount];
 
-    private const int IterationCount = 20000;
-    private const int AverageIterationIntervalMs = 5;
-    private const int RobotCount = 200;
-    private const int MinPointDistanceMs = 100;
+    // random flags
+    private const bool RandomInterval = true;
+    private const bool RandomPosition = true;
+    public const bool RandomSensors = true;
+    public const bool RandomMotors = true;
+
+    private const int IterationIntervalMs = 6;
+    private const int IterationIntervalDifference = 3;
+    public const int MotorDifference = 20;
+    public const double SensorQuality = 5; // the higher, the better
+    private const int MinPointDistanceMs = 100; // to prevent UI from lagging
+    private const int IterationCount = 10000;
+    private const int RobotCount = 50;
+    // private const int RobotCount = 500;
 
     public ParallelSimulation(Canvas canvas, Type robotType, RobotSetup robotSetup, Map map) {
         _canvas = canvas;
@@ -33,6 +42,7 @@ class ParallelSimulation : Simulation {
         _seed = rng.Next();
         _random = new Random(_seed);
 
+        Console.WriteLine("seed: " + _seed);
         PrepareRobots(robotType, robotSetup);
 
         var sw = new Stopwatch();
@@ -50,26 +60,28 @@ class ParallelSimulation : Simulation {
         return random.NextSingle() * 2 - 1;
     }
 
+    public static int RandomIntPM(Random random, int value) {
+        return random.Next(-value, value + 1);
+    }
+
     private void PrepareRobots(Type robotType, RobotSetup robotSetup) {
         var sw = new Stopwatch();
         sw.Start();
 
         _map.BoolBitmap.PopulateCache();
-        Console.WriteLine(_map.BoolBitmap.Cached);
 
         for (int i = 0; i < RobotCount; i++) {
             var robot = (RobotBase)Activator.CreateInstance(robotType)!;
             var robotRng = new Random(_random.Next());
-            var modifiedSetup = new RobotSetup {
+            var modifiedSetup = RandomPosition ? new RobotSetup {
                 Config = robotSetup.Config,
                 Position = new RobotPosition {
                     X = robotSetup.Position.X + RandomFloatPM(robotRng) * 10,
                     Y = robotSetup.Position.Y + RandomFloatPM(robotRng) * 10,
                     Rotation = robotSetup.Position.Rotation + RandomFloatPM(robotRng) / 4
                 }
-            };
+            } : robotSetup;
             var boolBitmap = new BoolBitmap(_map.BoolBitmap);
-            
             _simulatedRobots[i] = new SimulatedRobot(robot, modifiedSetup, boolBitmap, _map.Scale, robotRng);
         }
 
@@ -79,13 +91,12 @@ class ParallelSimulation : Simulation {
 
     private void RunRobot(int index) {
         for (int i = 0; i < IterationCount; i++) {
-            _simulatedRobots[index].MoveNext(AverageIterationIntervalMs + 0); // fixme
+            int randomIntervalDifference = RandomInterval ? RandomIntPM(_simulatedRobots[index].Random!, IterationIntervalDifference) : 0;
+            _simulatedRobots[index].MoveNext(IterationIntervalMs + randomIntervalDifference);
         }
     }
 
     public IReadOnlyList<Polyline> DrawTrajectories() {
-        var sw = new Stopwatch();
-        sw.Start();
         var polylines = new Polyline[RobotCount];
 
         for (int i = 0; i < RobotCount; i++) {
@@ -108,8 +119,6 @@ class ParallelSimulation : Simulation {
             _canvas.Children.Add(polylines[i]);
         }
 
-        sw.Stop();
-        Console.WriteLine("drawing: " + sw.Elapsed);
         return polylines;
     }
 
