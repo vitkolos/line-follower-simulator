@@ -12,9 +12,9 @@ class AppState {
     private readonly Panel _pinControlsContainer;
     private readonly Button _stateButton;
     public Map? Map;
-    public bool SimulationRunning => _realTimeSimulation?.Running ?? false;
+    public bool SimulationRunning => _liveSimulation?.Running ?? false;
     private Type _robotType;
-    private RealTimeSimulation? _realTimeSimulation;
+    private LiveSimulation? _liveSimulation;
     private Polyline? _oldTrajectory;
     public RobotSetup RobotSetup { get; set; }
     private AssemblyLoadContext? _assemblyLoadContext;
@@ -47,24 +47,24 @@ class AppState {
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
     }
 
-    public void InitializeRealtimeSimulation() {
-        if (_realTimeSimulation is not null) {
-            _realTimeSimulation.Dispose();
+    public void InitializeLiveSimulation() {
+        if (_liveSimulation is not null) {
+            _liveSimulation.Dispose();
         }
 
         if (Map is not null) {
             var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
-            _realTimeSimulation = new RealTimeSimulation(_canvas, robot, RobotSetup, Map, _pinControlsContainer);
-            _realTimeSimulation.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
+            _liveSimulation = new LiveSimulation(_canvas, robot, RobotSetup, Map, _pinControlsContainer);
+            _liveSimulation.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
         }
     }
 
     public void ToggleSimulation() {
-        if (_realTimeSimulation is not null) {
+        if (_liveSimulation is not null) {
             if (SimulationRunning) {
-                _realTimeSimulation.Pause();
+                _liveSimulation.Pause();
             } else {
-                _realTimeSimulation.Run();
+                _liveSimulation.Run();
             }
         }
     }
@@ -73,14 +73,14 @@ class AppState {
         if (_oldTrajectory is not null) {
             _canvas.Children.Remove(_oldTrajectory);
             _oldTrajectory = null;
-        } else if (_realTimeSimulation is not null) {
-            _oldTrajectory = _realTimeSimulation.DrawTrajectory();
+        } else if (_liveSimulation is not null) {
+            _oldTrajectory = _liveSimulation.DrawTrajectory();
         }
     }
 
     public RobotPosition? GetRobotPosition() {
-        if (_realTimeSimulation is not null) {
-            return _realTimeSimulation.RobotPosition;
+        if (_liveSimulation is not null) {
+            return _liveSimulation.RobotPosition;
         } else {
             return null;
         }

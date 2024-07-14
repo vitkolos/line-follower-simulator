@@ -143,17 +143,17 @@ public partial class MainWindow : Window {
 
         if (!_appState.SimulationRunning) {
             LoadRobotSetupFromControls();
-            _appState.InitializeRealtimeSimulation();
+            _appState.InitializeLiveSimulation();
         }
     }
 
     private void ShowRobot(object sender, EventArgs e) {
         LoadRobotSetupFromControls();
-        _appState.InitializeRealtimeSimulation();
+        _appState.InitializeLiveSimulation();
     }
 
     private void NewSimulation(object sender, EventArgs e) {
-        _appState.InitializeRealtimeSimulation();
+        _appState.InitializeLiveSimulation();
     }
 
     private void ToggleSimulation(object sender, EventArgs e) {

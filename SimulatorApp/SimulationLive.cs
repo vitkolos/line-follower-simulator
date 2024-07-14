@@ -13,12 +13,7 @@ using System.Drawing.Drawing2D;
 
 namespace SimulatorApp;
 
-abstract class Simulation : IDisposable {
-    public abstract void Dispose();
-}
-
-class RealTimeSimulation : Simulation {
-    // is created with canvas, map, starting position and robot instance
+class LiveSimulation : Simulation {
     // can be started, paused (freezed) and disposed
     // trajectory can be drawed
 
@@ -44,7 +39,7 @@ class RealTimeSimulation : Simulation {
     public event Action<bool> StateChange = _ => { };
     public RobotPosition RobotPosition => _simulatedRobot.Position;
 
-    public RealTimeSimulation(Canvas canvas, RobotBase robot, RobotSetup robotSetup, Map map, Panel pinControlsContainer) {
+    public LiveSimulation(Canvas canvas, RobotBase robot, RobotSetup robotSetup, Map map, Panel pinControlsContainer) {
         _canvas = canvas;
         _pinControlsContainer = pinControlsContainer;
         _map = map;
@@ -193,11 +188,3 @@ class RealTimeSimulation : Simulation {
         }
     }
 }
-
-// class ParallelSimulation : Simulation {
-//     // private Image _map;
-//     // private RobotPosition _startingPosition;
-//     public SimulatedRobot[] Robots = new SimulatedRobot[1];
-
-
-// }
