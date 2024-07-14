@@ -153,14 +153,11 @@ public partial class MainWindow : Window {
         }
     }
 
-    private void CanvasReleased(object sender, MouseEventArgs e) {
-        if (_appState.Map is not null && !_appState.SimulationRunning) {
-            var canvas = (Canvas)FindName("Canvas");
-            Point positionClicked = e.GetPosition(canvas);
-            var canvasReleaseX = (int)Math.Round(positionClicked.X);
-
-            if (Math.Abs(_canvasClickX - canvasReleaseX) < 300) {
-                ((TextBox)FindName("RobotRotation")).Text = ((float)Math.Round(GetTextBoxFloat("RobotRotation")) + _canvasClickX - canvasReleaseX).ToString();
+    private void CanvasMouseWheel(object sender, MouseWheelEventArgs e) {
+        if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) {
+            if (_appState.Map is not null && !_appState.SimulationRunning) {
+                int scroll = e.Delta / 10;
+                ((TextBox)FindName("RobotRotation")).Text = ((float)Math.Round(GetTextBoxFloat("RobotRotation")) + scroll).ToString();
                 LoadRobotSetupFromControls();
                 _appState.InitializeLiveSimulation();
             }
