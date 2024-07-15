@@ -13,9 +13,9 @@ public partial class MainWindow : Window {
 
         WriteDefaultValues();
         var canvas = (Canvas)FindName("Canvas");
-        var pinControlsContainer = (Panel)FindName("Pins");
+        var internalStateContainer = (Panel)FindName("State");
         var stateButton = (Button)FindName("StateButton");
-        _appState = new AppState(canvas, pinControlsContainer, stateButton);
+        _appState = new AppState(canvas, internalStateContainer, stateButton);
         LoadRobotSetupFromControls();
     }
 

@@ -54,7 +54,6 @@ class Sensors {
     }
 };
 
-
 public class Robot : RobotBase {
     private readonly Motor _leftMotor = new();
     private readonly Motor _rightMotor = new();
@@ -65,6 +64,7 @@ public class Robot : RobotBase {
 
     public override MotorsState MotorsMicroseconds => new(_leftMotor.Microseconds, _rightMotor.Microseconds);
     public override int FirstSensorPin => 3;
+    // public override string InternalState => _leftMotor.Microseconds + " " + _rightMotor.Microseconds + " " + string.Join(",", sensorsBlack);
 
 
     private const int forwardPercentage = 100;

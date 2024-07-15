@@ -141,9 +141,8 @@
                 </StackPanel>
             </Border>
             <WrapPanel>
-                <Label Margin="10,5,5,5">Arduino pins:</Label>
-                <WrapPanel
-                    x:Name="Pins"/>
+                <Label Margin="10,5,5,5">Internal state:</Label>
+                <WrapPanel x:Name="State"/>
             </WrapPanel>
         </StackPanel>
     </ScrollViewer>

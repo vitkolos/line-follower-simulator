@@ -10,7 +10,7 @@ namespace SimulatorApp;
 
 class AppState {
     private readonly Canvas _canvas;
-    private readonly Panel _pinControlsContainer;
+    private readonly Panel _internalStateContainer;
     private readonly Button _stateButton;
     public Map? Map;
     public bool SimulationRunning => _simulationLive?.Running ?? false;
@@ -21,32 +21,54 @@ class AppState {
     public RobotSetup RobotSetup { get; set; }
     private AssemblyLoadContext? _assemblyLoadContext;
 
-    public AppState(Canvas canvas, Panel pinControlsContainer, Button stateButton) {
+    public AppState(Canvas canvas, Panel internalStateContainer, Button stateButton) {
         _canvas = canvas;
-        _pinControlsContainer = pinControlsContainer;
+        _internalStateContainer = internalStateContainer;
         _stateButton = stateButton;
         _robotType = typeof(DummyRobot);
         _oldTrajectories = Array.Empty<Polyline>();
     }
 
     public void LoadMap(string imagePath, float zoom, float size) {
-        if (Map is not null) {
-            Map.Dispose();
-        }
+        Map?.Dispose();
 
-        Map = new Map(_canvas, imagePath, size, zoom);
+        try {
+            Map = new Map(_canvas, imagePath, size, zoom);
+        } catch (Exception exception) {
+            Map = null;
+            MessageBox.Show(exception.Message, "Map Loading Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     public void LoadAssembly(string assemblyPath) {
         _assemblyLoadContext?.Unload();
         _assemblyLoadContext = new AssemblyLoadContext(null, true);
         Assembly assembly;
+        IEnumerable<Type> robotTypes;
+        Exception? exceptionThrown = null;
 
-        using (var stream = System.IO.File.OpenRead(assemblyPath)) {
-            assembly = _assemblyLoadContext.LoadFromStream(stream);
+        try {
+            using (var stream = System.IO.File.OpenRead(assemblyPath)) {
+                assembly = _assemblyLoadContext.LoadFromStream(stream);
+            }
+
+            robotTypes = from type in assembly.GetTypes() where type.BaseType == typeof(RobotBase) select type;
+        } catch (Exception exception) {
+            robotTypes = [];
+            exceptionThrown = exception;
         }
 
-        IEnumerable<Type> robotTypes = from type in assembly.GetTypes() where type.BaseType == typeof(RobotBase) select type;
+        _robotType = typeof(DummyRobot);
+
+        if (exceptionThrown is not null) {
+            MessageBox.Show(exceptionThrown.Message, "Assembly Loading Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        } else if (!robotTypes.Any()) {
+            MessageBox.Show($"There is no class deriving from RobotBase, using DummyRobot.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        } else if (robotTypes.Skip(1).Any()) {
+            _robotType = robotTypes.First();
+            MessageBox.Show($"There are multiple classes deriving from RobotBase, using the first one ({_robotType}).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
     }
 
@@ -54,7 +76,7 @@ class AppState {
         _simulationLive?.Dispose();
 
         if (Map is not null) {
-            _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _pinControlsContainer);
+            _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _internalStateContainer);
             _simulationLive.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
         }
     }
@@ -94,6 +116,7 @@ class AppState {
             _simulationParallel.Dispose();
             _simulationParallel = null;
         } else if (Map is not null) {
+            _simulationLive?.Pause();
             progressBar.Visibility = Visibility.Visible;
             _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
 

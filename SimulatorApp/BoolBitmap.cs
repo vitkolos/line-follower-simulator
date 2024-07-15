@@ -71,8 +71,6 @@ class BoolBitmap : IDisposable {
     }
 
     public void Dispose() {
-        if (_bitmap is not null) {
-            _bitmap.Dispose();
-        }
+        _bitmap?.Dispose();
     }
 }

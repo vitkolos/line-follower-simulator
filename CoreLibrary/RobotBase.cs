@@ -19,6 +19,7 @@ public abstract class RobotBase {
     public abstract void Loop();
     public abstract MotorsState MotorsMicroseconds { get; }
     public abstract int FirstSensorPin { get; }
+    public virtual string InternalState => "";
 
     public void PinMode(int pin, PMode mode) {
         _pinModes[pin] = mode;

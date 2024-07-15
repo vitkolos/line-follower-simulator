@@ -24,8 +24,7 @@ class SimulationParallel : Simulation {
     public const int MotorDifference = 20;
     public const double SensorErrorLikelihood = 0.000_01;
     private const int MinPointDistanceMs = 200; // to prevent UI from lagging
-    private const int IterationCount = 300_000;
-    // private const int IterationCount = 10_000;
+    private const int IterationCount = 10_000;
     private const int RobotCount = 50;
 
     public SimulationParallel(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup) : base(canvas, map) {

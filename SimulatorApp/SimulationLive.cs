@@ -13,8 +13,9 @@ class SimulationLive : Simulation {
     // trajectory can be drawed
 
     private readonly SimulatedRobot _simulatedRobot;
-    private readonly Panel _pinControlsContainer;
+    private readonly Panel _internalStateContainer;
     private readonly List<PinControl> _pinControls = new();
+    private readonly ContentControl _internalStateControl = new Label();
     private readonly Path _robotIcon = new();
     private readonly Path[] _sensorIcons = new Path[RobotBase.SensorsCount];
     private readonly RotateTransform _rotation = new();
@@ -22,14 +23,14 @@ class SimulationLive : Simulation {
     private const int IterationIntervalMs = 6;
     public RobotPosition RobotPosition => _simulatedRobot.Position;
 
-    public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel pinControlsContainer) : base(canvas, map) {
-        _pinControlsContainer = pinControlsContainer;
+    public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel internalStateContainer) : base(canvas, map) {
+        _internalStateContainer = internalStateContainer;
         var robot = (RobotBase)Activator.CreateInstance(robotType)!;
         _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.BoolBitmap, _map.Scale);
         PrepareIcons(robotSetup.Config.Size, robotSetup.Config.SensorDistance);
         RedrawRobot();
-        SetupPinControls();
-        ShowPinStatus();
+        SetupStateControls();
+        ShowInternalState();
     }
 
     public async void Run() {
@@ -44,7 +45,7 @@ class SimulationLive : Simulation {
             }
 
             _simulatedRobot.MoveNext(IterationIntervalMs);
-            ShowPinStatus();
+            ShowInternalState();
             RedrawRobot();
         }
 
@@ -55,7 +56,7 @@ class SimulationLive : Simulation {
         Running = false;
     }
 
-    private void SetupPinControls() {
+    private void SetupStateControls() {
         foreach (int pin in _simulatedRobot.GetLeds()) {
             var control = new Label {
                 Width = 100,
@@ -65,7 +66,7 @@ class SimulationLive : Simulation {
             };
             var pc = new PinControl(pin, true, control);
             control.Tag = pc;
-            _pinControlsContainer.Children.Add(control);
+            _internalStateContainer.Children.Add(control);
             _pinControls.Add(pc);
         }
 
@@ -78,9 +79,14 @@ class SimulationLive : Simulation {
             control.PreviewMouseDown += ButtonPress;
             control.PreviewMouseUp += ButtonRelease;
             control.Tag = pc;
-            _pinControlsContainer.Children.Add(control);
+            _internalStateContainer.Children.Add(control);
             _pinControls.Add(pc);
         }
+
+        _internalStateControl.Padding = new Thickness(5);
+        _internalStateControl.Margin = new Thickness(5);
+        _internalStateControl.HorizontalContentAlignment = HorizontalAlignment.Center;
+        _internalStateContainer.Children.Add(_internalStateControl);
     }
 
     private void PrepareIcons(float scale, float sensorOffset) {
@@ -121,7 +127,7 @@ class SimulationLive : Simulation {
         }
     }
 
-    private void ShowPinStatus() {
+    private void ShowInternalState() {
         foreach (PinControl pinControl in _pinControls) {
             var control = (ContentControl)pinControl.Control;
             bool status = _simulatedRobot.PinStatus(pinControl.Pin);
@@ -132,6 +138,8 @@ class SimulationLive : Simulation {
                 control.Background = status ? Brushes.Pink : Brushes.LightGray;
             }
         }
+
+        _internalStateControl.Content = _simulatedRobot.Robot.InternalState;
     }
 
     private void ButtonPress(object sender, MouseButtonEventArgs e) => ButtonAction(sender, true);
@@ -170,8 +178,6 @@ class SimulationLive : Simulation {
             _canvas.Children.Remove(_sensorIcons[i]);
         }
 
-        foreach (PinControl pinControl in _pinControls) {
-            _pinControlsContainer.Children.Remove(pinControl.Control);
-        }
+        _internalStateContainer.Children.Clear();
     }
 }
