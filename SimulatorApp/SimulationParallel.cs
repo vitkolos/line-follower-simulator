@@ -31,7 +31,6 @@ class SimulationParallel : Simulation {
         _random = new Random(seed);
         _robotType = robotType;
         _robotSetup = robotSetup;
-        Console.WriteLine("seed: " + seed);
     }
 
     private static float RandomFloatPM(Random random) {

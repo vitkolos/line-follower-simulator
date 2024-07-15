@@ -115,13 +115,10 @@ public partial class MainWindow : Window {
         _appState.LoadAssembly(assemblyPath);
     }
 
-    private int _canvasClickX = 0;
-
     private void CanvasClicked(object sender, MouseEventArgs e) {
         if (_appState.Map is not null) {
             var canvas = (Canvas)FindName("Canvas");
             Point positionClicked = e.GetPosition(canvas);
-            _canvasClickX = (int)Math.Round(positionClicked.X);
             // #coordinates
             SetCoordinateTextBoxes((float)positionClicked.X, _appState.Map.Size - (float)positionClicked.Y);
 

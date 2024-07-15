@@ -1,5 +1,7 @@
 using CoreLibrary;
 
+namespace Robot4;
+
 /*/
 
 class Motor : Servo {

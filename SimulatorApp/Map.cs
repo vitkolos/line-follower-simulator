@@ -2,8 +2,8 @@ using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using Bitmap = System.Drawing.Bitmap;
 using System.Net.Http;
+using Bitmap = System.Drawing.Bitmap;
 
 namespace SimulatorApp;
 
@@ -20,35 +20,32 @@ class Map : IDisposable {
         Size = size;
         PrepareCanvas(size, zoom);
         _image = new Image();
-
-        using (MemoryStream stream = GetStreamFromPath(path)) {
-            DrawMap(stream, size);
-            Bitmap bitmap = new(new Bitmap(stream));
-            BoolBitmap = new BoolBitmap(bitmap);
-        }
-
+        DrawMap(path, size);
+        Bitmap bitmap = BitmapFromPath(path);
+        BoolBitmap = new BoolBitmap(bitmap);
         Scale = GetMapScale(size);
     }
 
-    private void DrawMap(Stream stream, float mapSize) {
+    private void DrawMap(string path, float mapSize) {
         _image.MaxHeight = mapSize;
         _image.MaxWidth = mapSize;
         var bitmapImage = new BitmapImage();
         bitmapImage.BeginInit();
-        bitmapImage.StreamSource = stream;
+        bitmapImage.UriSource = new Uri(path);
         bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
         bitmapImage.EndInit();
-        bitmapImage.Freeze();
         _image.Source = bitmapImage;
         _canvas.Children.Add(_image);
     }
 
-    private static MemoryStream GetStreamFromPath(string path) {
+    private static Bitmap BitmapFromPath(string path) {
         var uri = new Uri(path);
-        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(path).Result;
-        var memoryStream = new MemoryStream();
+        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
+        using var memoryStream = new MemoryStream();
         sourceStream.CopyTo(memoryStream);
-        return memoryStream;
+        var bitmap = new Bitmap(memoryStream);
+        return new Bitmap(bitmap);
     }
 
     private void PrepareCanvas(float size, float zoom) {

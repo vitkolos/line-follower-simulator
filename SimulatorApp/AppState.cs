@@ -12,13 +12,13 @@ class AppState {
     private readonly Canvas _canvas;
     private readonly Panel _internalStateContainer;
     private readonly Button _stateButton;
-    public Map? Map;
+    public Map? Map { get; private set; }
+    public RobotSetup RobotSetup { get; set; }
     public bool SimulationRunning => _simulationLive?.Running ?? false;
     private Type _robotType;
     private SimulationLive? _simulationLive;
     private SimulationParallel? _simulationParallel;
     private IReadOnlyList<Polyline> _oldTrajectories;
-    public RobotSetup RobotSetup { get; set; }
     private AssemblyLoadContext? _assemblyLoadContext;
 
     public AppState(Canvas canvas, Panel internalStateContainer, Button stateButton) {
@@ -26,10 +26,11 @@ class AppState {
         _internalStateContainer = internalStateContainer;
         _stateButton = stateButton;
         _robotType = typeof(DummyRobot);
-        _oldTrajectories = Array.Empty<Polyline>();
+        _oldTrajectories = [];
     }
 
     public void LoadMap(string imagePath, float zoom, float size) {
+        _simulationLive?.Dispose(); // prevents bitmap reading conflicts
         Map?.Dispose();
 
         try {
@@ -63,10 +64,10 @@ class AppState {
         if (exceptionThrown is not null) {
             MessageBox.Show(exceptionThrown.Message, "Assembly Loading Failed", MessageBoxButton.OK, MessageBoxImage.Error);
         } else if (!robotTypes.Any()) {
-            MessageBox.Show($"There is no class deriving from RobotBase, using DummyRobot.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show($"There is no class deriving from RobotBase, using {_robotType.Name}.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
         } else if (robotTypes.Skip(1).Any()) {
             _robotType = robotTypes.First();
-            MessageBox.Show($"There are multiple classes deriving from RobotBase, using the first one ({_robotType}).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show($"There are multiple classes deriving from RobotBase, using the first one ({_robotType.FullName}).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
@@ -113,12 +114,14 @@ class AppState {
         if (_oldTrajectories.Count > 0) {
             ClearTrajectories();
         } else if (_simulationParallel is not null) {
+            // cancel an ongoing simulation
             _simulationParallel.Dispose();
             _simulationParallel = null;
         } else if (Map is not null) {
-            _simulationLive?.Pause();
+            _simulationLive?.Pause(); // prevents bitmap reading conflicts
             progressBar.Visibility = Visibility.Visible;
             _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
+            // simulation can be cancelled by setting to null, therefore we have to check
 
             await Task.Run(() => {
                 _simulationParallel?.Prepare();

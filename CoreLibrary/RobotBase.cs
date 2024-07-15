@@ -1,5 +1,8 @@
 ﻿namespace CoreLibrary;
 
+public enum PMode { Input, Output, InputPullup }
+public readonly record struct MotorsState(int Left, int Right);
+
 public abstract class RobotBase {
     public const int PinCount = 32;
     public const int SensorsCount = 5;
@@ -45,21 +48,3 @@ public abstract class RobotBase {
         }
     }
 }
-
-public enum PMode {
-    Input,
-    Output,
-    InputPullup
-}
-
-public abstract class Servo {
-    public const int StopMicroseconds = 1500;
-
-    public int Microseconds { get; private set; } = StopMicroseconds;
-
-    public void WriteMicroseconds(int value) {
-        Microseconds = value;
-    }
-}
-
-public readonly record struct MotorsState(int Left, int Right);

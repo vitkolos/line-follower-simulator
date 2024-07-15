@@ -1,7 +1,7 @@
 using CoreLibrary;
 
 /*/
-class XYZ : RobotBase {
+class Robot2 : RobotBase {
     public override MotorsState MotorsMicroseconds => new MotorsState();
 
     public override int FirstSensorPin => 5;

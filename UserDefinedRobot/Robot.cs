@@ -1,6 +1,9 @@
 ﻿using CoreLibrary;
 
+namespace Robot1;
+
 /**/
+
 class Motor : Servo {
     private const float NumberOfSteps = 2.5f;
     private const int SpeedCoefficient = 1;
