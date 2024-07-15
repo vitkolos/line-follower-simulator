@@ -7,7 +7,6 @@ using CoreLibrary;
 namespace SimulatorApp;
 
 class SimulationParallel : Simulation {
-    private readonly int _seed;
     private readonly Random _random;
     private readonly Type _robotType;
     private readonly RobotSetup _robotSetup;
@@ -28,12 +27,11 @@ class SimulationParallel : Simulation {
     private const int RobotCount = 50;
 
     public SimulationParallel(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup) : base(canvas, map) {
-        var rng = new Random();
-        _seed = rng.Next();
-        _random = new Random(_seed);
+        int seed = new Random().Next();
+        _random = new Random(seed);
         _robotType = robotType;
         _robotSetup = robotSetup;
-        Console.WriteLine("seed: " + _seed);
+        Console.WriteLine("seed: " + seed);
     }
 
     private static float RandomFloatPM(Random random) {

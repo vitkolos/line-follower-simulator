@@ -1,7 +1,6 @@
 ﻿using CoreLibrary;
 
-namespace UserDefinedRobot;
-
+/**/
 class Motor : Servo {
     private const float NumberOfSteps = 2.5f;
     private const int SpeedCoefficient = 1;
@@ -284,3 +283,4 @@ enum raceState_t {
     RACING,
     FINISHED
 };
+/**/
