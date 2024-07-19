@@ -14,14 +14,17 @@ public partial class MainWindow : Window {
         WriteDefaultValues();
         var canvas = (Canvas)FindName("Canvas");
         var internalStateContainer = (Panel)FindName("State");
-        var stateButton = (Button)FindName("StateButton");
-        _appState = new AppState(canvas, internalStateContainer, stateButton);
+        var stateButton = (ContentControl)FindName("StateButton");
+        var assemblyLabel = (ContentControl)FindName("LoadedAssembly");
+        _appState = new AppState(canvas, internalStateContainer, stateButton, assemblyLabel);
         LoadRobotSetupFromControls();
+        _appState.VisibleTrajectoriesChange += UpdateTrajectoryButtons;
+        UpdateTrajectoryButtons(_appState.VisibleTrajectories);
     }
 
     private readonly AppState _appState;
 
-    private readonly Dictionary<string, string> _defaultValues = new Dictionary<string, string> {
+    private readonly Dictionary<string, string> _defaultValues = new() {
         {"TrackFileName", @"C:\Users\vitko\Downloads\track.png"},
         {"CanvasSize", "800"},
         {"CanvasZoom", "1"},
@@ -33,6 +36,13 @@ public partial class MainWindow : Window {
         {"SensorDistance", "10"},
         {"RobotSpeed", 1.5f.ToString()},
     };
+
+    private void UpdateTrajectoryButtons(AppState.VisibleTrajectoriesState trajectoriesState) {
+        ((Button)FindName("LiveTrajectoryButton")).Content =
+            trajectoriesState == AppState.VisibleTrajectoriesState.Live ? "Hide Trajectory" : "Draw Trajectory";
+        ((Button)FindName("ParallelButton")).Content =
+            trajectoriesState == AppState.VisibleTrajectoriesState.Parallel ? "Clear" : "Run";
+    }
 
     private void WriteDefaultValues() {
         foreach (KeyValuePair<string, string> entry in _defaultValues) {

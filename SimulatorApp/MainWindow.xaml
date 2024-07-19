@@ -96,7 +96,9 @@
                                 BorderThickness="1,1,0,1"/>
                             <Button Click="BrowseAssembly">Browse…</Button>
                             <Button Click="LoadAssembly"
-                                    Margin="10,0,0,0">Load Assembly</Button>
+                                    Margin="10,0,5,0">Load Assembly</Button>
+                            <Label x:Name="LoadedAssembly"
+                                   FontStyle="italic"/>
                         </WrapPanel>
                     </Border>
                 </WrapPanel>
@@ -113,14 +115,18 @@
                                     Margin="5,0"
                                     Width="60">Run</Button>
                             <Button Click="DrawTrajectory"
-                                    Margin="5,0">Draw Trajectory</Button>
+                                    x:Name="LiveTrajectoryButton"
+                                    Margin="5,0"
+                                    Width="120"/>
                         </WrapPanel>
                     </Border>
                     <Border Padding="10">
                         <WrapPanel>
                             <Label>Parallel simulation:</Label>
                             <Button Click="SimulateParallel"
-                                    Margin="5,0">Run</Button>
+                                    x:Name="ParallelButton"
+                                    Margin="5,0"
+                                    Width="60"/>
                             <ProgressBar Width="100"
                                          Height="10"
                                          Name="ProgressBar"

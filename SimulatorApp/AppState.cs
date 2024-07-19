@@ -11,7 +11,8 @@ namespace SimulatorApp;
 class AppState {
     private readonly Canvas _canvas;
     private readonly Panel _internalStateContainer;
-    private readonly Button _stateButton;
+    private readonly ContentControl _stateButton;
+    private readonly ContentControl _assemblyLabel;
     public Map? Map { get; private set; }
     public RobotSetup RobotSetup { get; set; }
     public bool SimulationRunning => _simulationLive?.Running ?? false;
@@ -20,17 +21,31 @@ class AppState {
     private SimulationParallel? _simulationParallel;
     private IReadOnlyList<Polyline> _oldTrajectories;
     private AssemblyLoadContext? _assemblyLoadContext;
+    private VisibleTrajectoriesState _visibleTrajectories;
+    public VisibleTrajectoriesState VisibleTrajectories {
+        get => _visibleTrajectories;
+        set {
+            _visibleTrajectories = value;
+            VisibleTrajectoriesChange(value);
+        }
+    }
+    public event Action<VisibleTrajectoriesState> VisibleTrajectoriesChange = _ => { };
 
-    public AppState(Canvas canvas, Panel internalStateContainer, Button stateButton) {
+    public enum VisibleTrajectoriesState { None, Live, Parallel }
+
+    public AppState(Canvas canvas, Panel internalStateContainer, ContentControl stateButton, ContentControl assemblyLabel) {
         _canvas = canvas;
         _internalStateContainer = internalStateContainer;
         _stateButton = stateButton;
+        _assemblyLabel = assemblyLabel;
         _robotType = typeof(DummyRobot);
         _oldTrajectories = [];
+        VisibleTrajectories = VisibleTrajectoriesState.None;
     }
 
     public void LoadMap(string imagePath, float zoom, float size) {
         _simulationLive?.Dispose(); // prevents bitmap reading conflicts
+        ClearTrajectories();
         Map?.Dispose();
 
         try {
@@ -71,6 +86,7 @@ class AppState {
         }
 
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
+        _assemblyLabel.Content = _robotType == typeof(DummyRobot) ? "" : $"{_robotType.FullName} loaded";
     }
 
     public void InitializeLiveSimulation() {
@@ -93,31 +109,35 @@ class AppState {
     }
 
     private void ClearTrajectories() {
-        foreach (var item in _oldTrajectories) {
-            _canvas.Children.Remove(item);
+        foreach (Polyline trajectory in _oldTrajectories) {
+            _canvas.Children.Remove(trajectory);
         }
 
         _oldTrajectories = [];
+        VisibleTrajectories = VisibleTrajectoriesState.None;
     }
 
     public void DrawTrajectory() {
-        if (_oldTrajectories.Count > 0) {
-            ClearTrajectories();
-        } else if (_simulationLive is not null) {
-            _oldTrajectories = _simulationLive.DrawTrajectories();
+        var previouslyVisible = VisibleTrajectories;
+        ClearTrajectories();
+
+        if (_simulationLive is not null && previouslyVisible != VisibleTrajectoriesState.Live) {
+            _oldTrajectories = [_simulationLive.DrawTrajectory()];
+            VisibleTrajectories = VisibleTrajectoriesState.Live;
         }
     }
 
     public RobotPosition? GetRobotPosition() => _simulationLive?.RobotPosition;
 
     public async void SimulateParallel(ProgressBar progressBar) {
-        if (_oldTrajectories.Count > 0) {
-            ClearTrajectories();
-        } else if (_simulationParallel is not null) {
+        var previouslyVisible = VisibleTrajectories;
+        ClearTrajectories();
+
+        if (_simulationParallel is not null) {
             // cancel an ongoing simulation
             _simulationParallel.Dispose();
             _simulationParallel = null;
-        } else if (Map is not null) {
+        } else if (Map is not null && previouslyVisible != VisibleTrajectoriesState.Parallel) {
             _simulationLive?.Pause(); // prevents bitmap reading conflicts
             progressBar.Visibility = Visibility.Visible;
             _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
@@ -129,7 +149,8 @@ class AppState {
             });
 
             _oldTrajectories = _simulationParallel?.DrawTrajectories() ?? [];
-            progressBar.Visibility = Visibility.Hidden;
+            VisibleTrajectories = VisibleTrajectoriesState.Parallel;
+            progressBar.Visibility = Visibility.Hidden; // cannot be bound on StateChanged (UI can only be modified in the main thread)
             _simulationParallel = null;
         }
     }

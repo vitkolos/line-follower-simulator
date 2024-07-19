@@ -151,7 +151,7 @@ class SimulationLive : Simulation {
         _simulatedRobot.SetButton(pc.Pin, press);
     }
 
-    public override IReadOnlyList<Polyline> DrawTrajectories() {
+    public Polyline DrawTrajectory() {
         var history = _simulatedRobot.GetPositionHistory();
         var points = new PointCollection();
 
@@ -165,8 +165,7 @@ class SimulationLive : Simulation {
             Stroke = Brushes.Red
         };
         _canvas.Children.Add(polyline);
-
-        return [polyline];
+        return polyline;
     }
 
     public override void Dispose() {

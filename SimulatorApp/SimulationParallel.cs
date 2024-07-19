@@ -88,7 +88,7 @@ class SimulationParallel : Simulation {
         }
     }
 
-    public override IReadOnlyList<Polyline> DrawTrajectories() {
+    public IReadOnlyList<Polyline> DrawTrajectories() {
         var polylines = new Polyline[RobotCount];
 
         for (int i = 0; i < RobotCount; i++) {

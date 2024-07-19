@@ -18,5 +18,4 @@ abstract class Simulation(Canvas canvas, Map map) : IDisposable {
     public event Action<bool> StateChange = _ => { };
 
     public abstract void Dispose();
-    public abstract IReadOnlyList<Polyline> DrawTrajectories();
 }
