@@ -75,8 +75,10 @@ class SimulationLive : Simulation {
                 Margin = new Thickness(5, 0)
             };
             var pc = new PinControl(pin, false, control);
-            control.AddHandler(Button.PointerPressedEvent, ButtonPress, RoutingStrategies.Tunnel);
-            control.AddHandler(Button.PointerReleasedEvent, ButtonRelease, RoutingStrategies.Tunnel);
+            control.AddHandler(Button.PointerPressedEvent, ButtonPressMouse, RoutingStrategies.Tunnel);
+            control.AddHandler(Button.PointerReleasedEvent, ButtonReleaseMouse, RoutingStrategies.Tunnel);
+            control.AddHandler(Button.KeyDownEvent, ButtonPressKeyboard, RoutingStrategies.Tunnel);
+            control.AddHandler(Button.KeyUpEvent, ButtonReleaseKeyboard, RoutingStrategies.Tunnel);
             control.Tag = pc;
             _internalStateContainer.Children.Add(control);
             _pinControls.Add(pc);
@@ -143,8 +145,20 @@ class SimulationLive : Simulation {
         _internalStateControl.Content = _simulatedRobot.Robot.InternalState;
     }
 
-    private void ButtonPress(object? sender, PointerPressedEventArgs e) => ButtonAction(sender!, true);
-    private void ButtonRelease(object? sender, PointerReleasedEventArgs e) => ButtonAction(sender!, false);
+    private void ButtonPressMouse(object? sender, PointerEventArgs e) => ButtonAction(sender!, true);
+    private void ButtonReleaseMouse(object? sender, PointerEventArgs e) => ButtonAction(sender!, false);
+
+    private void ButtonPressKeyboard(object? sender, KeyEventArgs e) {
+        if (e.Key == Key.Enter || e.Key == Key.Space) {
+            ButtonAction(sender!, true);
+        }
+    }
+
+    private void ButtonReleaseKeyboard(object? sender, KeyEventArgs e) {
+        if (e.Key == Key.Enter || e.Key == Key.Space) {
+            ButtonAction(sender!, false);
+        }
+    }
 
     private void ButtonAction(object sender, bool press) {
         var btn = (Button)sender;
