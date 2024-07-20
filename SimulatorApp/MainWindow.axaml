@@ -1,0 +1,100 @@
+<Window xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" x:Class="SimulatorApp.MainWindow" Title="SimulatorApp">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <Border Classes="separator">
+                <WrapPanel>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label Target="TrackFileName">Track:</Label>
+                            <TextBox x:Name="TrackFileName" Width="400" Margin="5,0,2,0" />
+                            <Button Click="BrowseTrack" Margin="0,0,5,0">Browse…</Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label>Canvas configuration:</Label>
+                            <Label Target="CanvasSize">height/width</Label>
+                            <TextBox x:Name="CanvasSize" Classes="number" />
+                            <Label Target="CanvasZoom">zoom</Label>
+                            <TextBox x:Name="CanvasZoom" Classes="number" />
+                            <Button Click="ShowTrack" Classes="confirm">Set Track</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Classes="separator">
+                <WrapPanel>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label>Robot position:</Label>
+                            <Label Target="RobotX">X</Label>
+                            <TextBox x:Name="RobotX" Classes="number" />
+                            <Label Target="RobotY">Y</Label>
+                            <TextBox x:Name="RobotY" Classes="number" />
+                            <Label Target="RobotRotation">R°</Label>
+                            <TextBox x:Name="RobotRotation" Classes="number" />
+                        </WrapPanel>
+                    </Border>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label>Robot configuration:</Label>
+                            <Label Target="RobotSize">size</Label>
+                            <TextBox x:Name="RobotSize" Classes="number" />
+                            <Label Target="SensorDistance">sensor dist.</Label>
+                            <TextBox x:Name="SensorDistance" Classes="number" />
+                            <Label Target="RobotSpeed">speed</Label>
+                            <TextBox x:Name="RobotSpeed" Classes="number" />
+                            <Button Click="ShowRobot" Classes="confirm">Set Robot</Button>
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Classes="separator">
+                <WrapPanel>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label Target="AssemblyFileName">Robot assembly:</Label>
+                            <TextBox x:Name="AssemblyFileName" Width="400" Margin="5,0,2,0" />
+                            <Button Click="BrowseAssembly" Margin="0,0,5,0">Browse…</Button>
+                            <Button Click="LoadAssembly" Classes="confirm">Load Assembly</Button>
+                            <Label x:Name="LoadedAssembly" Foreground="Gray" />
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Classes="separator">
+                <WrapPanel>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label>Live simulation:</Label>
+                            <Button Click="NewSimulation" Margin="5,0">Initialize</Button>
+                            <Button Click="ToggleSimulation" x:Name="StateButton" Margin="5,0" MinWidth="60">Run</Button>
+                            <Button Click="DrawTrajectory" x:Name="LiveTrajectoryButton" Margin="5,0" MinWidth="130" />
+                        </WrapPanel>
+                    </Border>
+                    <Border Classes="container">
+                        <WrapPanel>
+                            <Label>Parallel simulation:</Label>
+                            <Button Click="SimulateParallel" x:Name="ParallelButton" Margin="5,0" MinWidth="60" />
+                            <ProgressBar Width="100" Height="10" Name="ProgressBar" IsIndeterminate="True" Margin="5,0" IsVisible="False" />
+                        </WrapPanel>
+                    </Border>
+                </WrapPanel>
+            </Border>
+            <Border Classes="separator">
+                <StackPanel x:Name="CanvasContainer">
+                    <Canvas Background="White" x:Name="Canvas" PointerPressed="CanvasClicked" PointerWheelChanged="CanvasMouseWheel" />
+                </StackPanel>
+            </Border>
+            <Border Classes="container">
+                <WrapPanel>
+                    <Label Margin="0,0,5,0">Internal state:</Label>
+                    <WrapPanel x:Name="StatePanel" />
+                </WrapPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

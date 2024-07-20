@@ -1,6 +1,4 @@
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Controls;
+using System.Threading.Tasks;
 
 using CoreLibrary;
 
@@ -93,14 +91,14 @@ class SimulationParallel : Simulation {
 
         for (int i = 0; i < RobotCount; i++) {
             var history = _simulatedRobots[i].GetPositionHistory();
-            var points = new PointCollection();
+            var points = new List<Point>();
             int lastVisibleTime = -MinPointDistanceMs;
 
             foreach (PositionHistoryItem item in history) {
                 if (item.Time - lastVisibleTime >= MinPointDistanceMs) {
                     lastVisibleTime = item.Time;
                     // #coordinates
-                    points.Add(new System.Windows.Point(item.Position.X, _map.Size - item.Position.Y));
+                    points.Add(new Point(item.Position.X, _map.Size - item.Position.Y));
                 }
             }
 

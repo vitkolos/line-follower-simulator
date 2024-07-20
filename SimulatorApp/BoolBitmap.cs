@@ -1,4 +1,5 @@
-using System.Drawing;
+using Bitmap = SkiaSharp.SKBitmap;
+using Color = SkiaSharp.SKColor;
 
 namespace SimulatorApp;
 
@@ -52,11 +53,7 @@ class BoolBitmap : IDisposable {
 
         Color color = _bitmap.GetPixel(x, y);
         // returns true for white, false for black
-        return color switch {
-            { R: 0, G: 0, B: 0 } => false,
-            { R: 255, G: 255, B: 255 } => true,
-            _ => Math.Round(color.GetBrightness()) == 1
-        };
+        return (color.Red + color.Green + color.Blue) > 380;
     }
 
     public bool this[int x, int y] {

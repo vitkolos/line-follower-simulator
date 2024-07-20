@@ -1,6 +1,3 @@
-using System.Windows.Shapes;
-using System.Windows.Controls;
-
 namespace SimulatorApp;
 
 abstract class Simulation(Canvas canvas, Map map) : IDisposable {

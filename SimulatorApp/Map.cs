@@ -1,9 +1,7 @@
 using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Controls;
 using System.Net.Http;
-using Bitmap = System.Drawing.Bitmap;
+using Avalonia.Media.Imaging;
+using SkiaSharp;
 
 namespace SimulatorApp;
 
@@ -21,31 +19,32 @@ class Map : IDisposable {
         PrepareCanvas(size, zoom);
         _image = new Image();
         DrawMap(path, size);
-        Bitmap bitmap = BitmapFromPath(path);
+        SKBitmap bitmap = GetBitmap(path);
         BoolBitmap = new BoolBitmap(bitmap);
         Scale = GetMapScale(size);
     }
 
+    private static Stream StreamFromPath(string path) {
+        var uri = new Uri(path);
+        return uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
+    }
+
     private void DrawMap(string path, float mapSize) {
+        using Stream stream = StreamFromPath(path);
+        using var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        memoryStream.Seek(0, SeekOrigin.Begin);
         _image.MaxHeight = mapSize;
         _image.MaxWidth = mapSize;
-        var bitmapImage = new BitmapImage();
-        bitmapImage.BeginInit();
-        bitmapImage.UriSource = new Uri(path);
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-        bitmapImage.EndInit();
+        var bitmapImage = new Bitmap(memoryStream);
         _image.Source = bitmapImage;
         _canvas.Children.Add(_image);
     }
 
-    private static Bitmap BitmapFromPath(string path) {
-        var uri = new Uri(path);
-        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
-        using var memoryStream = new MemoryStream();
-        sourceStream.CopyTo(memoryStream);
-        var bitmap = new Bitmap(memoryStream);
-        return new Bitmap(bitmap);
+    private static SKBitmap GetBitmap(string path) {
+        using Stream stream = StreamFromPath(path);
+        var image = SKImage.FromEncodedData(stream);
+        return SKBitmap.FromImage(image);
     }
 
     private void PrepareCanvas(float size, float zoom) {
@@ -53,10 +52,9 @@ class Map : IDisposable {
         _canvas.Width = size;
         _canvas.RenderTransform = new ScaleTransform {
             ScaleX = zoom,
-            ScaleY = zoom,
-            CenterX = size / 2,
-            CenterY = 0
+            ScaleY = zoom
         };
+        _canvas.RenderTransformOrigin = new RelativePoint(new Point(0.5, 0), RelativeUnit.Relative); // top center
     }
 
     private float GetMapScale(float mapSize) {
