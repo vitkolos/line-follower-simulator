@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" x:Class="SimulatorApp.MainWindow" Title="SimulatorApp">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" x:Class="SimulatorApp.MainWindow" Title="Line Follower Simulator">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
             <Border Classes="separator">
@@ -21,6 +21,7 @@
                             <Label Target="CanvasZoom">zoom</Label>
                             <TextBox x:Name="CanvasZoom" Classes="number" />
                             <Button Click="ShowTrack" Classes="confirm">Set Track</Button>
+                            <ProgressBar Height="10" Name="TrackProgressBar" IsIndeterminate="True" Margin="5,0" IsVisible="False" />
                         </WrapPanel>
                     </Border>
                 </WrapPanel>
@@ -79,7 +80,7 @@
                         <WrapPanel>
                             <Label>Parallel simulation:</Label>
                             <Button Click="SimulateParallel" x:Name="ParallelButton" Margin="5,0" MinWidth="60" />
-                            <ProgressBar Width="100" Height="10" Name="ProgressBar" IsIndeterminate="True" Margin="5,0" IsVisible="False" />
+                            <ProgressBar Height="10" Name="ParallelProgressBar" IsIndeterminate="True" Margin="5,0" IsVisible="False" />
                         </WrapPanel>
                     </Border>
                 </WrapPanel>

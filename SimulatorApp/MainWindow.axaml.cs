@@ -2,6 +2,7 @@ namespace SimulatorApp;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 
@@ -32,7 +33,7 @@ public partial class MainWindow : Window {
         ContentControl assemblyLabel = LoadedAssembly;
         _appState = new AppState(this, canvas, internalStateContainer, stateButton, assemblyLabel);
         LoadRobotSetupFromControls();
-        _appState.VisibleTrajectoriesChange += UpdateTrajectoryButtons;
+        _appState.TrajectoryButtonsChange += UpdateTrajectoryButtons;
         UpdateTrajectoryButtons(_appState.VisibleTrajectories);
     }
 
@@ -44,7 +45,7 @@ public partial class MainWindow : Window {
         LiveTrajectoryButton.Content =
             trajectoriesState == AppState.VisibleTrajectoriesState.Live ? "Hide Trajectory" : "Draw Trajectory";
         ParallelButton.Content =
-            trajectoriesState == AppState.VisibleTrajectoriesState.Parallel ? "Clear" : "Run";
+            trajectoriesState == AppState.VisibleTrajectoriesState.Parallel ? "Clear" : (_appState.ParallelSimulationRunning ? "Stop" : "Run");
     }
 
     private void WriteDefaultValues() {
@@ -116,7 +117,7 @@ public partial class MainWindow : Window {
         float zoom = GetTextBoxFloat(CanvasZoom);
         float size = GetTextBoxFloat(CanvasSize);
         CanvasContainer.Height = size * zoom;
-        _appState.LoadMap(imagePath, zoom, size);
+        _appState.LoadMap(imagePath, zoom, size, TrackProgressBar);
     }
 
     private async void BrowseAssembly(object sender, RoutedEventArgs e) {
@@ -140,7 +141,7 @@ public partial class MainWindow : Window {
             // #coordinates
             SetCoordinateTextBoxes((float)point.Position.X, _appState.Map.Size - (float)point.Position.Y);
 
-            if (!_appState.SimulationRunning) {
+            if (!_appState.LiveSimulationRunning) {
                 LoadRobotSetupFromControls();
                 _appState.InitializeLiveSimulation();
             }
@@ -151,7 +152,7 @@ public partial class MainWindow : Window {
         PointerPoint point = e.GetCurrentPoint(sender as Control);
 
         if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed) {
-            if (_appState.Map is not null && !_appState.SimulationRunning) {
+            if (_appState.Map is not null && !_appState.LiveSimulationRunning) {
                 e.Handled = true; // prevents default (scrolling)
                 int scroll = (int)e.Delta.Y * 12;
                 RobotRotation.Text = ((float)Math.Round(GetTextBoxFloat(RobotRotation)) + scroll).ToString();
@@ -173,7 +174,7 @@ public partial class MainWindow : Window {
     private void ToggleSimulation(object sender, RoutedEventArgs e) {
         _appState.ToggleSimulation();
 
-        if (!_appState.SimulationRunning) {
+        if (!_appState.LiveSimulationRunning) {
             RobotPosition? rp = _appState.GetRobotPosition();
 
             if (rp is not null) {
@@ -187,6 +188,6 @@ public partial class MainWindow : Window {
     }
 
     private void SimulateParallel(object sender, RoutedEventArgs e) {
-        _appState.SimulateParallel(ProgressBar);
+        _appState.SimulateParallel(ParallelProgressBar);
     }
 }

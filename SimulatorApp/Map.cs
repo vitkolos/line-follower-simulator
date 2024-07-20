@@ -1,6 +1,8 @@
 using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+
 using SkiaSharp;
 
 namespace SimulatorApp;
@@ -13,21 +15,20 @@ class Map : IDisposable {
     private readonly Image _image;
     private static readonly HttpClient HttpClient = new();
 
-    public Map(Canvas canvas, string path, float size, float zoom) {
+    public Map(Canvas canvas, Stream stream, float size, float zoom) {
         _canvas = canvas;
         Size = size;
         PrepareCanvas(size, zoom);
         _image = new Image();
-        using var stream = StreamFromPath(path);
         DrawMap(stream, size);
         SKBitmap bitmap = GetBitmap(stream);
         BoolBitmap = new BoolBitmap(bitmap);
         Scale = GetMapScale(size);
     }
 
-    private static MemoryStream StreamFromPath(string path) {
+    public static async Task<MemoryStream> StreamFromPathAsync(string path) {
         var uri = new Uri(path);
-        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
+        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : await HttpClient.GetStreamAsync(uri);
         var memoryStream = new MemoryStream();
         sourceStream.CopyTo(memoryStream);
         return memoryStream;

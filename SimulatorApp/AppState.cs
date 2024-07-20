@@ -1,8 +1,8 @@
 using System.Runtime.Loader;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.IO;
 using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 using CoreLibrary;
 
@@ -16,7 +16,8 @@ class AppState {
     private readonly ContentControl _assemblyLabel;
     public Map? Map { get; private set; }
     public RobotSetup RobotSetup { get; set; }
-    public bool SimulationRunning => _simulationLive?.Running ?? false;
+    public bool LiveSimulationRunning => _simulationLive?.Running ?? false;
+    public bool ParallelSimulationRunning => _simulationParallel is not null;
     private Type _robotType;
     private SimulationLive? _simulationLive;
     private SimulationParallel? _simulationParallel;
@@ -27,10 +28,10 @@ class AppState {
         get => _visibleTrajectories;
         set {
             _visibleTrajectories = value;
-            VisibleTrajectoriesChange(value);
+            TrajectoryButtonsChange(value);
         }
     }
-    public event Action<VisibleTrajectoriesState> VisibleTrajectoriesChange = _ => { };
+    public event Action<VisibleTrajectoriesState> TrajectoryButtonsChange = _ => { };
 
     public enum VisibleTrajectoriesState { None, Live, Parallel }
 
@@ -49,17 +50,24 @@ class AppState {
         MessageBoxManager.GetMessageBoxStandard(title, content, windowStartupLocation: WindowStartupLocation.CenterOwner).ShowWindowDialogAsync(_window);
     }
 
-    public void LoadMap(string imagePath, float zoom, float size) {
+    public async void LoadMap(string imagePath, float zoom, float size, ProgressBar progressBar) {
         _simulationLive?.Dispose(); // prevents bitmap reading conflicts
         ClearTrajectories();
         Map?.Dispose();
+        progressBar.IsVisible = true;
+        Stream? stream = null;
 
         try {
-            Map = new Map(_canvas, imagePath, size, zoom);
+            stream = await Map.StreamFromPathAsync(imagePath);
+            Map = new Map(_canvas, stream, size, zoom);
         } catch (Exception exception) {
             Map = null;
             ShowMessageBox("Map Loading Failed", exception.Message);
+        } finally {
+            stream?.Dispose();
         }
+
+        progressBar.IsVisible = false;
     }
 
     public void LoadAssembly(string assemblyPath) {
@@ -106,7 +114,7 @@ class AppState {
 
     public void ToggleSimulation() {
         if (_simulationLive is not null) {
-            if (SimulationRunning) {
+            if (LiveSimulationRunning) {
                 _simulationLive.Pause();
             } else {
                 _simulationLive.Run();
@@ -148,6 +156,7 @@ class AppState {
             progressBar.IsVisible = true;
             _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
             // simulation can be cancelled by setting to null, therefore we have to check
+            TrajectoryButtonsChange(VisibleTrajectories);
 
             await Task.Run(() => {
                 _simulationParallel?.Prepare();
@@ -155,7 +164,7 @@ class AppState {
             });
 
             _oldTrajectories = _simulationParallel?.DrawTrajectories() ?? [];
-            VisibleTrajectories = VisibleTrajectoriesState.Parallel;
+            VisibleTrajectories = _oldTrajectories.Count > 0 ? VisibleTrajectoriesState.Parallel : VisibleTrajectoriesState.None;
             progressBar.IsVisible = false; // cannot be bound on StateChanged (UI can only be modified in the main thread)
             _simulationParallel = null;
         }
