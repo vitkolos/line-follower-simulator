@@ -3,7 +3,7 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
-class SimulatedRobot {
+public class SimulatedRobot {
     public RobotBase Robot { get; }
     public RobotPosition Position { get; private set; }
     public Random? Random { get; }

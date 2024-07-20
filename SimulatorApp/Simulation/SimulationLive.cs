@@ -4,12 +4,12 @@ using CoreLibrary;
 namespace SimulatorApp;
 
 class SimulationLive : Simulation {
-    // can be started, paused (freezed) and disposed
+    // can be initialized, started, paused (freezed) and disposed
     // trajectory can be drawed
 
     private readonly SimulatedRobot _simulatedRobot;
     private readonly Panel _internalStateContainer;
-    private readonly List<PinControl> _pinControls = new();
+    private readonly List<PinControl> _pinControls = [];
     private readonly ContentControl _internalStateControl = new Label();
     private readonly Path _robotIcon = new();
     private readonly Path[] _sensorIcons = new Path[RobotBase.SensorsCount];
@@ -17,6 +17,8 @@ class SimulationLive : Simulation {
     private const int IterationLimit = 100_000;
     private const int IterationIntervalMs = 6;
     public RobotPosition RobotPosition => _simulatedRobot.Position;
+
+    readonly record struct PinControl(int Pin, bool IsLed, Control Control);
 
     public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel internalStateContainer) : base(canvas, map) {
         _internalStateContainer = internalStateContainer;
