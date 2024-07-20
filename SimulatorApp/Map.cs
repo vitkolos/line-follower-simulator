@@ -18,31 +18,31 @@ class Map : IDisposable {
         Size = size;
         PrepareCanvas(size, zoom);
         _image = new Image();
-        DrawMap(path, size);
-        SKBitmap bitmap = GetBitmap(path);
+        using var stream = StreamFromPath(path);
+        DrawMap(stream, size);
+        SKBitmap bitmap = GetBitmap(stream);
         BoolBitmap = new BoolBitmap(bitmap);
         Scale = GetMapScale(size);
     }
 
-    private static Stream StreamFromPath(string path) {
+    private static MemoryStream StreamFromPath(string path) {
         var uri = new Uri(path);
-        return uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
+        using Stream sourceStream = uri.IsFile ? File.OpenRead(path) : HttpClient.GetStreamAsync(uri).Result;
+        var memoryStream = new MemoryStream();
+        sourceStream.CopyTo(memoryStream);
+        return memoryStream;
     }
 
-    private void DrawMap(string path, float mapSize) {
-        using Stream stream = StreamFromPath(path);
-        using var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        memoryStream.Seek(0, SeekOrigin.Begin);
+    private void DrawMap(Stream stream, float mapSize) {
         _image.MaxHeight = mapSize;
         _image.MaxWidth = mapSize;
-        var bitmapImage = new Bitmap(memoryStream);
-        _image.Source = bitmapImage;
+        stream.Seek(0, SeekOrigin.Begin);
+        _image.Source = new Bitmap(stream);
         _canvas.Children.Add(_image);
     }
 
-    private static SKBitmap GetBitmap(string path) {
-        using Stream stream = StreamFromPath(path);
+    private static SKBitmap GetBitmap(Stream stream) {
+        stream.Seek(0, SeekOrigin.Begin);
         var image = SKImage.FromEncodedData(stream);
         return SKBitmap.FromImage(image);
     }
