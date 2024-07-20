@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-
 namespace SimulatorApp;
 
 readonly record struct SensorPosition(float X, float Y);

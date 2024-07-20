@@ -1,8 +1,5 @@
 namespace SimulatorApp;
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 

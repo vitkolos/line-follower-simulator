@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
 using Avalonia.Interactivity;
-
 using CoreLibrary;
 
 namespace SimulatorApp;

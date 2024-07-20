@@ -1,8 +1,6 @@
 using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-
 using SkiaSharp;
 
 namespace SimulatorApp;

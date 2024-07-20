@@ -1,5 +1,4 @@
 using System.Reflection;
-
 using CoreLibrary;
 
 namespace SimulatorApp;

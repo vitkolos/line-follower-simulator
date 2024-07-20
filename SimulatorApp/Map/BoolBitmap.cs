@@ -1,11 +1,10 @@
-using Bitmap = SkiaSharp.SKBitmap;
-using Color = SkiaSharp.SKColor;
+using SkiaSharp;
 
 namespace SimulatorApp;
 
 class BoolBitmap : IDisposable {
     private readonly bool[] _boolArray;
-    private readonly Bitmap? _bitmap;
+    private readonly SKBitmap? _bitmap;
     public int Height { get; init; }
     public int Width { get; init; }
     public bool Cached { get; private set; }
@@ -22,7 +21,7 @@ class BoolBitmap : IDisposable {
         Cached = boolBitmap.Cached;
     }
 
-    public BoolBitmap(Bitmap bitmap) {
+    public BoolBitmap(SKBitmap bitmap) {
         _bitmap = bitmap;
         Height = bitmap.Height;
         Width = bitmap.Width;
@@ -51,7 +50,7 @@ class BoolBitmap : IDisposable {
             throw new NullReferenceException("bitmap is null");
         }
 
-        Color color = _bitmap.GetPixel(x, y);
+        SKColor color = _bitmap.GetPixel(x, y);
         // returns true for white, false for black
         return (color.Red + color.Green + color.Blue) > 380;
     }

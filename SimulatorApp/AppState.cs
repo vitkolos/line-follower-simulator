@@ -1,9 +1,7 @@
 using System.Runtime.Loader;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.IO;
 using MsBox.Avalonia;
-
 using CoreLibrary;
 
 namespace SimulatorApp;
@@ -78,7 +76,7 @@ class AppState {
         Exception? exceptionThrown = null;
 
         try {
-            using (var stream = System.IO.File.OpenRead(assemblyPath)) {
+            using (var stream = File.OpenRead(assemblyPath)) {
                 assembly = _assemblyLoadContext.LoadFromStream(stream);
             }
 

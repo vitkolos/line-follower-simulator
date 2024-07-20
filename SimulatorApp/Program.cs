@@ -1,10 +1,6 @@
-﻿using Avalonia;
-using System;
+﻿namespace SimulatorApp;
 
-namespace SimulatorApp;
-
-class Program
-{
+class Program {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
