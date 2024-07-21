@@ -1,4 +1,5 @@
 using System.Reflection;
+
 using CoreLibrary;
 
 namespace SimulatorApp;
@@ -8,6 +9,7 @@ public class SimulatedRobot {
     public RobotPosition Position { get; private set; }
     public Random? Random { get; }
     public SensorPosition[] SensorPositions = new SensorPosition[RobotBase.SensorsCount];
+    public bool RobotMoved { get; private set; } = false;
     private int _currentTime = 0;
     private readonly List<PositionHistoryItem> _positionHistory;
     private readonly Action<int> _addMillis;
@@ -89,6 +91,10 @@ public class SimulatedRobot {
     }
 
     private void MovePosition(int elapsedMillis) {
+        if (Robot.MotorsMicroseconds.Left != Servo.StopMicroseconds || Robot.MotorsMicroseconds.Right != Servo.StopMicroseconds) {
+            RobotMoved = true;
+        }
+
         MotorsState motorsMicroseconds = (Random is not null && SimulationParallel.RandomMotors) ? new MotorsState {
             Left = Robot.MotorsMicroseconds.Left + SimulationParallel.RandomIntPM(Random, SimulationParallel.MotorDifference),
             Right = Robot.MotorsMicroseconds.Right + SimulationParallel.RandomIntPM(Random, SimulationParallel.MotorDifference)

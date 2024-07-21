@@ -7,6 +7,7 @@ class SimulationParallel : Simulation {
     private readonly Type _robotType;
     private readonly RobotSetup _robotSetup;
     private readonly SimulatedRobot[] _simulatedRobots = new SimulatedRobot[RobotCount];
+    public bool AnyRobotMoved => _simulatedRobots.Any(simulatedRobot => simulatedRobot.RobotMoved);
 
     // random flags
     private const bool RandomInterval = true;

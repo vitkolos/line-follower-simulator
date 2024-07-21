@@ -2,6 +2,7 @@ using System.Runtime.Loader;
 using System.Reflection;
 using System.IO;
 using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
 using CoreLibrary;
 
 namespace SimulatorApp;
@@ -45,7 +46,13 @@ class AppState {
     }
 
     private void ShowMessageBox(string title, string content) {
-        MessageBoxManager.GetMessageBoxStandard(title, content, windowStartupLocation: WindowStartupLocation.CenterOwner).ShowWindowDialogAsync(_window);
+        MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams {
+            ContentTitle = title,
+            ContentMessage = content,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            MaxWidth = Math.Min(_window.Width * 0.95, 800),
+            CanResize = true
+        }).ShowWindowDialogAsync(_window);
     }
 
     public async void LoadMap(string imagePath, float zoom, float size, ProgressBar progressBar) {
@@ -161,8 +168,20 @@ class AppState {
                 _simulationParallel?.Run();
             });
 
-            _oldTrajectories = _simulationParallel?.DrawTrajectories() ?? [];
-            VisibleTrajectories = _oldTrajectories.Count > 0 ? VisibleTrajectoriesState.Parallel : VisibleTrajectoriesState.None;
+            if (_simulationParallel is null) {
+                _oldTrajectories = [];
+                VisibleTrajectories = VisibleTrajectoriesState.None;
+            } else {
+                _oldTrajectories = _simulationParallel.DrawTrajectories();
+                VisibleTrajectories = VisibleTrajectoriesState.Parallel;
+
+                if (_robotType == typeof(DummyRobot)) {
+                    ShowMessageBox("Notice", $"You need to load an assembly with a valid RobotBase child. \nCurrently, a {_robotType.Name} is used instead.");
+                } else if (!_simulationParallel.AnyRobotMoved) {
+                    ShowMessageBox("Notice", "It seems that no simulated robots have moved. Make sure that after clicking Initialize and Run, the robot starts to move on its own. To use parallel simulation, no user action (e.g. pressing a “hardware” button) should be required for the robot to start driving.");
+                }
+            }
+
             progressBar.IsVisible = false; // cannot be bound on StateChanged (UI can only be modified in the main thread)
             _simulationParallel = null;
         }
