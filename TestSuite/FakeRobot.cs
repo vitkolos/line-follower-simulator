@@ -1,14 +1,12 @@
 
 using CoreLibrary;
 
-using SimulatorApp;
-
 namespace TestSuite;
 
 class FakeRobot : RobotBase {
     public override MotorsState MotorsMicroseconds => new(Servo.StopMicroseconds + LeftSpeed, Servo.StopMicroseconds - RightSpeed);
 
-    public override int FirstSensorPin => 3;
+    public override int FirstSensorPin => 10;
 
     public int LeftSpeed = 0;
     public int RightSpeed = 0;
@@ -20,6 +18,10 @@ class FakeRobot : RobotBase {
     }
 
     public override void Setup() {
+        PinMode(1, PMode.Output);
+        PinMode(2, PMode.Output);
+        PinMode(3, PMode.InputPullup);
+        PinMode(4, PMode.InputPullup);
         SetupCalled++;
     }
 }

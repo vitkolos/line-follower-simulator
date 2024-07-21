@@ -52,7 +52,7 @@ public class BoolBitmap : IDisposable {
 
         SKColor color = _bitmap.GetPixel(x, y);
         // returns true for white, false for black
-        return (color.Red + color.Green + color.Blue) > 380;
+        return (color.Red + color.Green + color.Blue) > 384;
     }
 
     public bool this[int x, int y] {

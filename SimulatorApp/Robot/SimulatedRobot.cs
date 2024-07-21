@@ -77,9 +77,7 @@ public class SimulatedRobot {
         }
     }
 
-    public bool PinStatus(int pin) {
-        return _pinValues[pin];
-    }
+    public bool GetPinStatus(int pin) => _pinValues[pin];
 
     public void SetButton(int pin, bool down) {
         if (_pinModes[pin] == PMode.InputPullup) {

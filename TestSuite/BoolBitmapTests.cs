@@ -1,5 +1,5 @@
-using SimulatorApp;
 using SkiaSharp;
+using SimulatorApp;
 
 namespace TestSuite;
 
@@ -53,30 +53,61 @@ public class BoolBitmapTests {
         Assert.Equal(height, boolBitmapCopy.Height);
     }
 
-    [Fact]
-    public void ReadPixel_Outside() {
-        var bitmap = new SKBitmap(1, 2);
+    [Theory]
+    [InlineData(10, 20)]
+    [InlineData(5, 25)]
+    [InlineData(15, 2)]
+    [InlineData(-1, 2)]
+    [InlineData(1, -2)]
+    public void ReadPixel_Outside(int x, int y) {
+        var bitmap = new SKBitmap(10, 20);
         var boolBitmap = new BoolBitmap(bitmap);
 
-        Assert.Throws<IndexOutOfRangeException>(() => boolBitmap[1, 2]);
+        Assert.Throws<IndexOutOfRangeException>(() => boolBitmap[x, y]);
     }
 
-    [Fact]
-    public void ReadPixel_Dark() {
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    [InlineData(9, 19)]
+    [InlineData(5, 3)]
+    public void ReadPixel_Inside(int x, int y) {
+        var bitmap = new SKBitmap(10, 20);
+        var boolBitmap = new BoolBitmap(bitmap);
+        _ = boolBitmap[x, y];
+    }
+
+    public static IEnumerable<object[]> GetColors(bool light) {
+        return light ? [
+            [SKColors.White],
+            [SKColors.LightYellow],
+            [SKColors.Yellow],
+            [SKColors.AliceBlue],
+        ] : [
+            [SKColors.Black],
+            [SKColors.DarkBlue],
+            [SKColors.DarkRed],
+        ];
+    }
+
+    [Theory]
+    [MemberData(nameof(GetColors), false)]
+    public void ReadPixel_Dark(SKColor darkColor) {
         var bitmap = new SKBitmap(1, 2);
         var boolBitmap = new BoolBitmap(bitmap);
 
-        bitmap.SetPixel(0, 1, SKColors.DarkBlue);
+        bitmap.SetPixel(0, 1, darkColor);
 
         Assert.False(boolBitmap[0, 1]);
     }
 
-    [Fact]
-    public void ReadPixel_Light() {
+    [Theory]
+    [MemberData(nameof(GetColors), true)]
+    public void ReadPixel_Light(SKColor lightColor) {
         var bitmap = new SKBitmap(1, 2);
         var boolBitmap = new BoolBitmap(bitmap);
 
-        bitmap.SetPixel(0, 1, SKColors.LightYellow);
+        bitmap.SetPixel(0, 1, lightColor);
 
         Assert.True(boolBitmap[0, 1]);
     }

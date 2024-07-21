@@ -133,7 +133,7 @@ class SimulationLive : Simulation {
     private void ShowInternalState() {
         foreach (PinControl pinControl in _pinControls) {
             var control = (ContentControl)pinControl.Control;
-            bool status = _simulatedRobot.PinStatus(pinControl.Pin);
+            bool status = _simulatedRobot.GetPinStatus(pinControl.Pin);
             string statusText = status ? "HIGH" : "LOW";
             control.Content = $"pin {pinControl.Pin} {statusText}";
 
