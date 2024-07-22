@@ -76,6 +76,7 @@ class SimulationLive : Simulation {
                 Margin = new Thickness(5, 0)
             };
             var pc = new PinControl(pin, false, control);
+            // normal event binding does not work due to Button click event specifics
             control.AddHandler(Button.PointerPressedEvent, ButtonPressMouse, RoutingStrategies.Tunnel);
             control.AddHandler(Button.PointerReleasedEvent, ButtonReleaseMouse, RoutingStrategies.Tunnel);
             control.AddHandler(Button.KeyDownEvent, ButtonPressKeyboard, RoutingStrategies.Tunnel);
@@ -87,7 +88,6 @@ class SimulationLive : Simulation {
 
         _internalStateControl.Padding = new Thickness(5);
         _internalStateControl.Margin = new Thickness(5);
-        _internalStateControl.HorizontalContentAlignment = HorizontalAlignment.Center;
         _internalStateContainer.Children.Add(_internalStateControl);
     }
 
@@ -176,7 +176,8 @@ class SimulationLive : Simulation {
 
         var polyline = new Polyline {
             Points = points,
-            Stroke = Brushes.Red
+            Stroke = Brushes.Red,
+            StrokeThickness = 2
         };
         _canvas.Children.Add(polyline);
         return polyline;

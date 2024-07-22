@@ -51,6 +51,10 @@ public class SimulatedRobot {
         Robot.Loop();
     }
 
+    /// <summary>
+    /// Moves the simulation by one step
+    /// </summary>
+    /// <param name="elapsedMillis">how many milliseconds have elapsed since the last step</param>
     public void MoveNext(int elapsedMillis) {
         // timekeeping
         _currentTime += elapsedMillis;

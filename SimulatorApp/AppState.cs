@@ -19,6 +19,7 @@ class AppState {
     public Map? Map { get; private set; }
     public RobotSetup RobotSetup { get; set; }
     public bool LiveSimulationRunning => _simulationLive?.Running ?? false;
+    public RobotPosition? LiveRobotPosition => _simulationLive?.RobotPosition;
     public bool ParallelSimulationRunning => _simulationParallel is not null;
     private Type _robotType;
     private SimulationLive? _simulationLive;
@@ -60,6 +61,7 @@ class AppState {
 
     public async void LoadMap(string imagePath, float zoom, float size, ProgressBar progressBar) {
         _simulationLive?.Dispose(); // prevents bitmap reading conflicts
+        _simulationLive = null;
         ClearTrajectories();
         Map?.Dispose();
         progressBar.IsVisible = true;
@@ -96,24 +98,23 @@ class AppState {
             exceptionThrown = exception;
         }
 
-        _robotType = typeof(DummyRobot);
+        _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
 
         if (exceptionThrown is not null) {
             ShowMessageBox("Assembly Loading Failed", exceptionThrown.Message);
         } else if (!robotTypes.Any()) {
             ShowMessageBox("Warning", $"There is no class deriving from RobotBase, a {_robotType.Name} will be used instead.");
         } else if (robotTypes.Skip(1).Any()) {
-            _robotType = robotTypes.First();
             ShowMessageBox("Warning", $"There are multiple classes deriving from RobotBase, the first one ({_robotType.FullName}) will be used.");
         }
 
-        _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
         string time = DateTime.Now.ToString("T");
         _assemblyLabel.Content = _robotType == typeof(DummyRobot) ? "" : $"{_robotType.FullName} loaded at {time}";
     }
 
     public void InitializeLiveSimulation() {
         _simulationLive?.Dispose();
+        _simulationLive = null;
 
         if (Map is not null) {
             _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _internalStateContainer);
@@ -149,8 +150,6 @@ class AppState {
             VisibleTrajectories = VisibleTrajectoriesState.Live;
         }
     }
-
-    public RobotPosition? GetRobotPosition() => _simulationLive?.RobotPosition;
 
     public async void SimulateParallel(ProgressBar progressBar) {
         var previouslyVisible = VisibleTrajectories;

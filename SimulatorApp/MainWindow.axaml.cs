@@ -38,7 +38,6 @@ public partial class MainWindow : Window {
     }
 
     private readonly AppState _appState;
-
     private readonly Dictionary<TextBox, string> _defaultValues;
 
     private void UpdateTrajectoryButtons(AppState.VisibleTrajectoriesState trajectoriesState) {
@@ -54,7 +53,7 @@ public partial class MainWindow : Window {
         }
     }
 
-    private string GetTextBoxValue(TextBox textBox) => textBox.Text ?? "";
+    private static string GetTextBoxValue(TextBox textBox) => textBox.Text ?? "";
 
     private float GetTextBoxFloat(TextBox textBox) {
         string text = textBox.Text ?? "";
@@ -83,7 +82,8 @@ public partial class MainWindow : Window {
         RobotY.Text = double.Round(y, 2).ToString();
 
         if (rotation is not null) {
-            RobotRotation.Text = double.Round(rotation.Value / Math.PI * 180, 2).ToString();
+            double angle = rotation.Value / Math.PI * 180 % 360;
+            RobotRotation.Text = double.Round(angle, 2).ToString();
         }
     }
 
@@ -115,9 +115,11 @@ public partial class MainWindow : Window {
 
     private async void BrowseTrack(object sender, RoutedEventArgs e) {
         string oldFileName = GetTextBoxValue(TrackFileName);
+        // browse the directory of the last selected file
         string path = Path.GetDirectoryName(oldFileName) ?? "";
 
         if (path == "") {
+            // fallback path, works when dotnet run is used
             path = Assembly.GetExecutingAssembly().Location;
 
             for (int i = 0; i < 4; i++) {
@@ -145,14 +147,15 @@ public partial class MainWindow : Window {
 
     private async void BrowseAssembly(object sender, RoutedEventArgs e) {
         string oldFileName = GetTextBoxValue(AssemblyFileName);
+        // browse the directory of the last selected file
         string path = Path.GetDirectoryName(oldFileName) ?? "";
 
         if (path == "") {
+            // fallback path, works when dotnet run & dotnet build are used
             path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
             string word = "SimulatorApp";
             int index = path.LastIndexOf(word);
             path = path.Substring(0, index) + "UserDefinedRobot" + path.Substring(index + word.Length);
-            Console.WriteLine(path);
         }
 
         string? fileName = await OpenFilePickerAsync("Open Assembly", [new FilePickerFileType("Assemblies") { Patterns = ["*.dll"] }], path);
@@ -190,7 +193,9 @@ public partial class MainWindow : Window {
             if (_appState.Map is not null && !_appState.LiveSimulationRunning) {
                 e.Handled = true; // prevents default (scrolling)
                 int scroll = (int)e.Delta.Y * 12;
-                RobotRotation.Text = ((float)Math.Round(GetTextBoxFloat(RobotRotation)) + scroll).ToString();
+                int oldAngle = (int)Math.Round(GetTextBoxFloat(RobotRotation));
+                int newAngle = (oldAngle + scroll) % 360;
+                RobotRotation.Text = newAngle.ToString();
                 LoadRobotSetupFromControls();
                 _appState.InitializeLiveSimulation();
             }
@@ -210,7 +215,7 @@ public partial class MainWindow : Window {
         _appState.ToggleSimulation();
 
         if (!_appState.LiveSimulationRunning) {
-            RobotPosition? rp = _appState.GetRobotPosition();
+            RobotPosition? rp = _appState.LiveRobotPosition;
 
             if (rp is not null) {
                 SetCoordinateTextBoxes(rp.Value.X, rp.Value.Y, rp.Value.Rotation);
