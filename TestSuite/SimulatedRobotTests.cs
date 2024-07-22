@@ -154,4 +154,26 @@ public class SimulatedRobotTests : IDisposable {
         simulatedRobot.MoveNext(10);
         Assert.False(simulatedRobot.GetPinStatus(12));
     }
+
+    [Fact]
+    public void Robot_NotMoved() {
+        var robot = new FakeRobot();
+        var simulatedRobot = new SimulatedRobot(robot, _setup, _boolBitmap, 1);
+        Assert.False(simulatedRobot.RobotMoved);
+        simulatedRobot.MoveNext(5);
+        Assert.False(simulatedRobot.RobotMoved);
+    }
+
+    [Fact]
+    public void Robot_Moved() {
+        var robot = new FakeRobot();
+        var simulatedRobot = new SimulatedRobot(robot, _setup, _boolBitmap, 1);
+        Assert.False(simulatedRobot.RobotMoved);
+        robot.LeftSpeed = 50;
+        simulatedRobot.MoveNext(5);
+        Assert.True(simulatedRobot.RobotMoved);
+        robot.LeftSpeed = 0;
+        simulatedRobot.MoveNext(5);
+        Assert.True(simulatedRobot.RobotMoved);
+    }
 }
