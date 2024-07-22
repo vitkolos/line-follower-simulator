@@ -3,6 +3,9 @@
 public enum PMode { Input, Output, InputPullup }
 public readonly record struct MotorsState(int Left, int Right);
 
+/// <summary>
+/// Base class for the internal logic of the robot
+/// </summary>
 public abstract class RobotBase {
     public const int PinCount = 32;
     public const int SensorsCount = 5;
