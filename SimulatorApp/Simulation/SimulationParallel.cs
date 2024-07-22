@@ -2,6 +2,11 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Parallel simulation allows to test the stability of the robot (its inner logic)
+/// by letting multiple robots to drive over the same track with a subtle level of randomness.
+/// Supported actions: Prepare, Run, DrawTrajectories
+/// </summary>
 class SimulationParallel : Simulation {
     private readonly Random _random;
     private readonly Type _robotType;

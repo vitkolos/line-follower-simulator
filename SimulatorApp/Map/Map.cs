@@ -5,6 +5,9 @@ using SkiaSharp;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Stores the track image
+/// </summary>
 class Map : IDisposable {
     private readonly Canvas _canvas;
     public float Scale { get; private set; }

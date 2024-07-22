@@ -3,10 +3,11 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Live simulation aims to provide an experience very similar to experimenting with a real robot.
+/// Supported actions: Initialize (constructor), Start, Pause, DrawTrajectory, Dispose
+/// </summary>
 class SimulationLive : Simulation {
-    // can be initialized, started, paused (freezed) and disposed
-    // trajectory can be drawed
-
     private readonly SimulatedRobot _simulatedRobot;
     private readonly Panel _internalStateContainer;
     private readonly List<PinControl> _pinControls = [];
@@ -92,8 +93,6 @@ class SimulationLive : Simulation {
 
     private void PrepareIcons(float scale, float sensorOffset) {
         // https://yqnn.github.io/svg-path-editor/
-        // M 15 -10 V 10 M 10 -10 V 10 H -20 V -10 H 10 M 0 -10 V 10 M -2 0 H 2
-        // M 10 -10 V 10 M 8 -10 V 10 H -14 V -10 H 8 M 0 -10 V 10 M -2 0 H 2
         _robotIcon.Data = PathGeometry.Parse("M " + sensorOffset.ToString() + " -10 V 10 M 8 -10 V 10 H -14 V -10 H 8 M 0 -10 V 10 M -2 0 H 2");
         _robotIcon.Stroke = Brushes.Black;
         _robotIcon.Fill = new SolidColorBrush(Color.Parse("#99cccccc"));

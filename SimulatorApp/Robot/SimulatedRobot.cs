@@ -4,6 +4,9 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Takes care of the robot interactions with the environment; wraps the inner logic of the robot so that it can be used from Simulation classes
+/// </summary>
 public class SimulatedRobot {
     public RobotBase Robot { get; }
     public RobotPosition Position { get; private set; }

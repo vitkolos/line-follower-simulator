@@ -7,7 +7,7 @@ using Avalonia.Platform.Storage;
 namespace SimulatorApp;
 
 /// <summary>
-/// Interaction logic for MainWindow.xaml
+/// User interface rendering and events, user interaction processing
 /// </summary>
 public partial class MainWindow : Window {
     public MainWindow() {

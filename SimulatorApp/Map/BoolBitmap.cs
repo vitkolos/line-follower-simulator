@@ -2,6 +2,10 @@ using SkiaSharp;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Wraps track image (bitmap) to make it easier to use from Simulated Robot.
+/// Also speeds up the reading in parallel simulation by caching the pixels
+/// </summary>
 public class BoolBitmap : IDisposable {
     private readonly bool[] _boolArray;
     private readonly SKBitmap? _bitmap;

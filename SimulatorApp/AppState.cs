@@ -7,6 +7,9 @@ using CoreLibrary;
 
 namespace SimulatorApp;
 
+/// <summary>
+/// Stores application state to keep it separated from UI and window state
+/// </summary>
 class AppState {
     private readonly Window _window;
     private readonly Canvas _canvas;
