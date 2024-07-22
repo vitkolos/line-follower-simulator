@@ -1,7 +1,9 @@
-namespace SimulatorApp;
-
+using System.Reflection;
+using Path = System.IO.Path;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+
+namespace SimulatorApp;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -11,13 +13,13 @@ public partial class MainWindow : Window {
         InitializeComponent();
 
         _defaultValues = new Dictionary<TextBox, string>() {
-            {TrackFileName, @"C:\Users\vitko\Downloads\track.png"},
+            {TrackFileName, ""},
             {CanvasSize, "800"},
             {CanvasZoom, 0.9f.ToString()},
             {RobotX, "100"},
             {RobotY, "100"},
             {RobotRotation, "45"},
-            {AssemblyFileName, @"D:\OneDrive - Univerzita Karlova\Code\Csharp\semestr4\line-follower\UserDefinedRobot\bin\Release\net8.0\UserDefinedRobot.dll"},
+            {AssemblyFileName, ""},
             {RobotSize, "4"},
             {SensorDistance, "10"},
             {RobotSpeed, 1.5f.ToString()},
@@ -51,10 +53,10 @@ public partial class MainWindow : Window {
         }
     }
 
-    private string GetTextBoxValue(TextBox textBox) => textBox.Text!;
+    private string GetTextBoxValue(TextBox textBox) => textBox.Text ?? "";
 
     private float GetTextBoxFloat(TextBox textBox) {
-        string text = textBox.Text!;
+        string text = textBox.Text ?? "";
         bool result = float.TryParse(text, out float value);
 
         if (result) {
@@ -90,18 +92,32 @@ public partial class MainWindow : Window {
         };
     }
 
-    private async Task<string?> OpenFilePickerAsync(string title, IReadOnlyList<FilePickerFileType>? fileTypeFilter) {
+    private async Task<string?> OpenFilePickerAsync(string title, IReadOnlyList<FilePickerFileType>? fileTypeFilter, string path) {
+        IStorageFolder? startLocation = await StorageProvider.TryGetFolderFromPathAsync(path);
         IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {
             Title = title,
             AllowMultiple = false,
-            FileTypeFilter = fileTypeFilter
+            FileTypeFilter = fileTypeFilter,
+            SuggestedStartLocation = startLocation
         });
-
         return files.Count > 0 ? files[0].TryGetLocalPath() : null;
     }
 
     private async void BrowseTrack(object sender, RoutedEventArgs e) {
-        string? fileName = await OpenFilePickerAsync("Open Track File", [FilePickerFileTypes.ImageAll]);
+        string oldFileName = GetTextBoxValue(TrackFileName);
+        string path = Path.GetDirectoryName(oldFileName) ?? "";
+
+        if (path == "") {
+            path = Assembly.GetExecutingAssembly().Location;
+
+            for (int i = 0; i < 4; i++) {
+                path = Path.GetDirectoryName(path) ?? "";
+            }
+
+            path = Path.Join(path, "Assets");
+        }
+
+        string? fileName = await OpenFilePickerAsync("Open Track File", [FilePickerFileTypes.ImageAll], path);
 
         if (fileName is not null) {
             TrackFileName.Text = fileName;
@@ -118,7 +134,18 @@ public partial class MainWindow : Window {
     }
 
     private async void BrowseAssembly(object sender, RoutedEventArgs e) {
-        string? fileName = await OpenFilePickerAsync("Open Assembly", [new FilePickerFileType("Assemblies") { Patterns = ["*.dll"] }]);
+        string oldFileName = GetTextBoxValue(AssemblyFileName);
+        string path = Path.GetDirectoryName(oldFileName) ?? "";
+
+        if (path == "") {
+            path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+            string word = "SimulatorApp";
+            int index = path.LastIndexOf(word);
+            path = path.Substring(0, index) + "UserDefinedRobot" + path.Substring(index + word.Length);
+            Console.WriteLine(path);
+        }
+
+        string? fileName = await OpenFilePickerAsync("Open Assembly", [new FilePickerFileType("Assemblies") { Patterns = ["*.dll"] }], path);
 
         if (fileName is not null) {
             AssemblyFileName.Text = fileName;

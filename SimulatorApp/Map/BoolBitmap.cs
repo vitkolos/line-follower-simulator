@@ -46,13 +46,17 @@ public class BoolBitmap : IDisposable {
     }
 
     private bool GetPixel(int x, int y) {
+        // returns true for white, false for black
+
         if (_bitmap is null) {
             throw new NullReferenceException("bitmap is null");
         }
 
         SKColor color = _bitmap.GetPixel(x, y);
-        // returns true for white, false for black
-        return (color.Red + color.Green + color.Blue) > 384;
+        int sum = color.Red + color.Green + color.Blue;
+        int white = 3 * (255 - color.Alpha); // "table" is white
+        int treshold = 384;
+        return sum + white > treshold;
     }
 
     public bool this[int x, int y] {

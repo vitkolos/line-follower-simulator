@@ -105,7 +105,8 @@ class AppState {
         }
 
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));
-        _assemblyLabel.Content = _robotType == typeof(DummyRobot) ? "" : $"{_robotType.FullName} loaded";
+        string time = DateTime.Now.ToString("T");
+        _assemblyLabel.Content = _robotType == typeof(DummyRobot) ? "" : $"{_robotType.FullName} loaded at {time}";
     }
 
     public void InitializeLiveSimulation() {
