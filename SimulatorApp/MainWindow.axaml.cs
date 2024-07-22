@@ -156,6 +156,7 @@ public partial class MainWindow : Window {
     private void LoadAssembly(object sender, RoutedEventArgs e) {
         string assemblyPath = GetTextBoxValue(AssemblyFileName);
         _appState.LoadAssembly(assemblyPath);
+        _appState.InitializeLiveSimulation();
     }
 
     private void CanvasClicked(object sender, PointerPressedEventArgs e) {

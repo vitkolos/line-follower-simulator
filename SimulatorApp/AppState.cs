@@ -98,10 +98,10 @@ class AppState {
         if (exceptionThrown is not null) {
             ShowMessageBox("Assembly Loading Failed", exceptionThrown.Message);
         } else if (!robotTypes.Any()) {
-            ShowMessageBox("Warning", $"There is no class deriving from RobotBase, using {_robotType.Name}.");
+            ShowMessageBox("Warning", $"There is no class deriving from RobotBase, a {_robotType.Name} will be used instead.");
         } else if (robotTypes.Skip(1).Any()) {
             _robotType = robotTypes.First();
-            ShowMessageBox("Warning", $"There are multiple classes deriving from RobotBase, using the first one ({_robotType.FullName}).");
+            ShowMessageBox("Warning", $"There are multiple classes deriving from RobotBase, the first one ({_robotType.FullName}) will be used.");
         }
 
         _robotType = robotTypes.FirstOrDefault(typeof(DummyRobot));

@@ -76,15 +76,15 @@
                     <Border Classes="container">
                         <WrapPanel>
                             <Label>Live simulation:</Label>
-                            <Button Click="NewSimulation" Margin="5,0">Initialize</Button>
-                            <Button Click="ToggleSimulation" x:Name="StateButton" Margin="5,0" MinWidth="60">Run</Button>
+                            <Button Click="ToggleSimulation" x:Name="StateButton" Margin="5,0">Run</Button>
+                            <Button Click="NewSimulation" Margin="5,0">Reset</Button>
                             <Button Click="DrawTrajectory" x:Name="LiveTrajectoryButton" Margin="5,0" MinWidth="130" />
                         </WrapPanel>
                     </Border>
                     <Border Classes="container">
                         <WrapPanel>
                             <Label>Parallel simulation:</Label>
-                            <Button Click="SimulateParallel" x:Name="ParallelButton" Margin="5,0" MinWidth="60" />
+                            <Button Click="SimulateParallel" x:Name="ParallelButton" Margin="5,0" />
                             <ProgressBar Height="10" Name="ParallelProgressBar" IsIndeterminate="True" Margin="5,0"
                                 IsVisible="False" />
                         </WrapPanel>
