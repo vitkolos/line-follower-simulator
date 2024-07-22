@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Globalization;
 using Path = System.IO.Path;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -58,6 +59,15 @@ public partial class MainWindow : Window {
     private float GetTextBoxFloat(TextBox textBox) {
         string text = textBox.Text ?? "";
         bool result = float.TryParse(text, out float value);
+
+        if (!result) {
+            string separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+
+            if (separator == "," || separator == ".") {
+                string notSeparator = separator == "," ? "." : ",";
+                result = float.TryParse(text.Replace(notSeparator, separator), out value);
+            }
+        }
 
         if (result) {
             textBox.Text = value.ToString();
