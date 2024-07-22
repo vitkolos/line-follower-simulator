@@ -53,7 +53,7 @@ class AppState {
             ContentTitle = title,
             ContentMessage = content,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            MaxWidth = Math.Min(_window.Width * 0.95, 800),
+            MaxWidth = Math.Min(_window.ClientSize.Width * 0.95, 800),
             CanResize = true
         }).ShowWindowDialogAsync(_window);
     }
