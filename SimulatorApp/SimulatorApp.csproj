@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\icon.ico" />
   </ItemGroup>
 </Project>
