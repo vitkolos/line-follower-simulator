@@ -5,30 +5,39 @@ namespace SimulatorApp;
 /// <summary>
 /// Parallel simulation allows to test the stability of the robot (its inner logic)
 /// by letting multiple robots to drive over the same track with a subtle level of randomness.
-/// Supported actions: Prepare, Run, DrawTrajectories
+/// Supported actions: Prepare, Run, DrawTrajectories, Cancel
 /// </summary>
-class SimulationParallel : Simulation {
-    private readonly Random _random;
-    private readonly Type _robotType;
-    private readonly RobotSetup _robotSetup;
-    private readonly SimulatedRobot[] _simulatedRobots = new SimulatedRobot[RobotCount];
-    public bool AnyRobotMoved => _simulatedRobots.Any(simulatedRobot => simulatedRobot.RobotMoved);
+class SimulationParallel {
+    private const int MinPointDistanceMs = 200; // to prevent UI from lagging
+    private const int IterationCount = 10_000;
+    private const int RobotCount = 50;
+    private const int IterationIntervalMs = 6;
 
-    // random flags
+    // randomness settings
+    private const int IterationIntervalDifference = 3;
+    private const float PositionDifference = 10f;
+    private const float RotationDifference = 0.25f;
+    public const double SensorErrorLikelihood = 0.000_01;
+    public const int MotorDifference = 20;
+
+    // randomness flags
     private const bool RandomInterval = true;
     private const bool RandomPosition = true;
     public const bool RandomSensors = true;
     public const bool RandomMotors = true;
 
-    private const int IterationIntervalMs = 6;
-    private const int IterationIntervalDifference = 3;
-    public const int MotorDifference = 20;
-    public const double SensorErrorLikelihood = 0.000_01;
-    private const int MinPointDistanceMs = 200; // to prevent UI from lagging
-    private const int IterationCount = 10_000;
-    private const int RobotCount = 50;
+    private readonly Canvas _canvas;
+    private readonly Map _map;
+    private readonly Random _random;
+    private readonly Type _robotType;
+    private readonly RobotSetup _robotSetup;
+    private readonly SimulatedRobot[] _simulatedRobots = new SimulatedRobot[RobotCount];
+    private bool _canceled = false;
+    public bool AnyRobotMoved => _simulatedRobots.Any(simulatedRobot => simulatedRobot.RobotMoved);
 
-    public SimulationParallel(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup) : base(canvas, map) {
+    public SimulationParallel(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup) {
+        _canvas = canvas;
+        _map = map;
         int seed = new Random().Next();
         _random = new Random(seed);
         _robotType = robotType;
@@ -44,46 +53,37 @@ class SimulationParallel : Simulation {
     }
 
     public void Prepare() {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        Running = true;
+        if (_canceled) { return; }
+
         _map.BoolBitmap.PopulateCache();
 
         for (int i = 0; i < RobotCount; i++) {
-            if (!Running || _disposed) {
-                break;
-            }
+            if (_canceled) { break; }
 
             var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
             var robotRng = new Random(_random.Next());
             var modifiedSetup = RandomPosition ? new RobotSetup {
                 Config = _robotSetup.Config,
                 Position = new RobotPosition {
-                    X = _robotSetup.Position.X + RandomFloatPM(robotRng) * 10,
-                    Y = _robotSetup.Position.Y + RandomFloatPM(robotRng) * 10,
-                    Rotation = _robotSetup.Position.Rotation + RandomFloatPM(robotRng) / 4
+                    X = _robotSetup.Position.X + RandomFloatPM(robotRng) * PositionDifference,
+                    Y = _robotSetup.Position.Y + RandomFloatPM(robotRng) * PositionDifference,
+                    Rotation = _robotSetup.Position.Rotation + RandomFloatPM(robotRng) * RotationDifference
                 }
             } : _robotSetup;
             var boolBitmap = new BoolBitmap(_map.BoolBitmap);
             _simulatedRobots[i] = new SimulatedRobot(robot, modifiedSetup, boolBitmap, _map.Scale, robotRng);
         }
-
-        Running = false;
     }
 
     public void Run() {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        Running = true;
         Parallel.For(0, RobotCount, RunRobotByIndex);
-        Running = false;
     }
 
     private void RunRobotByIndex(int index) => RunRobot(_simulatedRobots[index]);
 
     private void RunRobot(SimulatedRobot simulatedRobot) {
         for (int i = 0; i < IterationCount; i++) {
-            if (!Running || _disposed) {
-                break;
-            }
+            if (_canceled) { break; }
 
             int randomIntervalDifference = RandomInterval ? RandomIntPM(simulatedRobot.Random!, IterationIntervalDifference) : 0;
             simulatedRobot.MoveNext(IterationIntervalMs + randomIntervalDifference);
@@ -116,8 +116,7 @@ class SimulationParallel : Simulation {
         return polylines;
     }
 
-    public override void Dispose() {
-        _disposed = true;
-        Running = false; // race condition
+    public void Cancel() {
+        _canceled = true;
     }
 }

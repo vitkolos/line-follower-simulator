@@ -1,4 +1,5 @@
 using Avalonia.Interactivity;
+
 using CoreLibrary;
 
 namespace SimulatorApp;
@@ -7,7 +8,12 @@ namespace SimulatorApp;
 /// Live simulation aims to provide an experience very similar to experimenting with a real robot.
 /// Supported actions: Initialize (constructor), Start, Pause, DrawTrajectory, Dispose
 /// </summary>
-class SimulationLive : Simulation {
+class SimulationLive {
+    private const int IterationLimit = 100_000;
+    private const int IterationIntervalMs = 6;
+
+    private readonly Canvas _canvas;
+    private readonly Map _map;
     private readonly SimulatedRobot _simulatedRobot;
     private readonly Panel _internalStateContainer;
     private readonly List<PinControl> _pinControls = [];
@@ -15,13 +21,24 @@ class SimulationLive : Simulation {
     private readonly Path _robotIcon = new();
     private readonly Path[] _sensorIcons = new Path[RobotBase.SensorsCount];
     private readonly RotateTransform _rotation = new();
-    private const int IterationLimit = 100_000;
-    private const int IterationIntervalMs = 6;
     public RobotPosition RobotPosition => _simulatedRobot.Position;
+    private bool _running = false;
+    private bool _disposed = false;
+    public event Action<bool> StateChange = _ => { };
+
+    public bool Running {
+        get => _running;
+        private set {
+            _running = value;
+            StateChange(value);
+        }
+    }
 
     readonly record struct PinControl(int Pin, bool IsLed, Control Control);
 
-    public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel internalStateContainer) : base(canvas, map) {
+    public SimulationLive(Canvas canvas, Map map, Type robotType, RobotSetup robotSetup, Panel internalStateContainer) {
+        _canvas = canvas;
+        _map = map;
         _internalStateContainer = internalStateContainer;
         var robot = (RobotBase)Activator.CreateInstance(robotType)!;
         _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.BoolBitmap, _map.Scale);
@@ -183,7 +200,7 @@ class SimulationLive : Simulation {
         return polyline;
     }
 
-    public override void Dispose() {
+    public void Dispose() {
         _disposed = true;
         Running = false;
         _canvas.Children.Remove(_robotIcon);

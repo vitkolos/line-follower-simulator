@@ -8,6 +8,10 @@ namespace SimulatorApp;
 /// Takes care of the robot interactions with the environment; wraps the inner logic of the robot so that it can be used from Simulation classes
 /// </summary>
 public class SimulatedRobot {
+    private const float WheelDistance = 20f; // 20f => 20 px
+    private const float SpeedCoefficient = 0.5f; // 1f means that 1600 (1500+100) microseconds equals 100 px/s; 2f & 1600 us => 200 px/s etc.
+    private static readonly float[] SensorDistancesY = { 10f, 3f, 0f, -3f, -10f };
+
     public RobotBase Robot { get; }
     public RobotPosition Position { get; private set; }
     public Random? Random { get; }
@@ -21,10 +25,6 @@ public class SimulatedRobot {
     private readonly BoolBitmap _map;
     private readonly RobotConfig _robotConfig;
     private readonly float _mapScale;
-
-    private const float WheelDistance = 20f; // 20f => 20 px
-    private const float SpeedCoefficient = 0.5f; // 1f means that 1600 (1500+100) microseconds equals 100 px/s; 2f & 1600 us => 200 px/s etc.
-    private static readonly float[] SensorDistancesY = { 10f, 3f, 0f, -3f, -10f };
     private readonly float[] _sensorAngles = new float[RobotBase.SensorsCount];
     private readonly float[] _sensorDistances = new float[RobotBase.SensorsCount];
 

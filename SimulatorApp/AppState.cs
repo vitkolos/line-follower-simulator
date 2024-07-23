@@ -157,9 +157,10 @@ class AppState {
 
         if (_simulationParallel is not null) {
             // cancel an ongoing simulation
-            _simulationParallel.Dispose();
+            _simulationParallel.Cancel();
             _simulationParallel = null;
         } else if (Map is not null && previouslyVisible != VisibleTrajectoriesState.Parallel) {
+            // start a new simulation
             _simulationLive?.Pause(); // prevents bitmap reading conflicts
             progressBar.IsVisible = true;
             _simulationParallel = new SimulationParallel(_canvas, Map, _robotType, RobotSetup);
