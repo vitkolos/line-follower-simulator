@@ -92,7 +92,7 @@ class AppState {
                 assembly = _assemblyLoadContext.LoadFromStream(stream);
             }
 
-            robotTypes = from type in assembly.GetTypes() where type.BaseType == typeof(RobotBase) select type;
+            robotTypes = from type in assembly.GetExportedTypes() where type.BaseType == typeof(RobotBase) select type;
         } catch (Exception exception) {
             robotTypes = [];
             exceptionThrown = exception;

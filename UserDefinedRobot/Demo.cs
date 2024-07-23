@@ -26,7 +26,7 @@ class Sensors(Robot robot) {
 
 enum Direction { Forward, Left, Right };
 
-class Robot : RobotBase {
+public class Robot : RobotBase {
     private const int ButtonPin = 2;
     private const int LedPin = 11;
     private const int ForwardPercentage = 100;
