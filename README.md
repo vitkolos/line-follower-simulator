@@ -22,7 +22,7 @@ Po stažení obsahu tohoto repozitáře stačí ke spuštení programu použít 
 
 Aby bylo možné program rozumně používat, je potřeba disponovat souborem s dráhou (rastrovým obrázkem v jednom z běžných formátů, např. PNG nebo JPEG), příkladem takového souboru je `SimulatorApp/Assets/track.png`. Další vhodné dráhy lze najít [na GitHubu](https://github.com/jaresan/ArduinoSimulator/tree/18106315eedb868713eca6dc190a1462eb5e45d9/public/assets). Kromě lokálního souboru lze vložit i URL adresu obrázku.
 
-Rovněž je nutné získat assembly s kódem robota. Součástí načítaného assembly by vždy měla být právě jedna veřejná třída, která je potomkem třídy `RobotBase` z projektu `CoreLibrary`. Ve složce `UserDefinedRobot` je připravený vzorový kód robota. Z něj se assembly získá klasicky příkazem `dotnet build`, výsledný soubor `UserDefinedRobot.dll` lze rovnou použít v aplikaci.
+Rovněž je nutné získat assembly s kódem robota. Součástí načítaného assembly by vždy měla být právě jedna veřejná třída, která je potomkem třídy `RobotBase` z `CoreLibrary`. Ve složce `UserDefinedRobot` je připravený vzorový kód robota. Z něj se assembly získá klasicky příkazem `dotnet build`, výsledný soubor `UserDefinedRobot.dll` lze rovnou použít v aplikaci.
 
 ### Kód robota
 
@@ -30,7 +30,7 @@ Program se zaměřuje na simulaci robota jezdícího po čáře – cílem simul
 
 Očekávám, že cílem uživatelů tohoto programu bude naprogramovat robota na platformě Arduino. Proto lze při programování vnitřního fungování robota používat základní funkce, které jsou na této platformě běžně k dispozici.
 
-Jako jednotné rozhraní k programování robota slouží třída `RobotBase` v projektu `CoreLibrary`. Assembly s kódem robota by mělo obsahovat jednoho veřejného potomka této třídy. Ten musí implementovat metody `Setup` a `Loop` (používají se velmi podobně jako odpovídající funkce platformy Arduino), dále pak vlastnosti `MotorsMicroseconds` a `FirstSensorPin`. Je možné rovněž implementovat vlastnost `InternalState` (o té [viz níže](#průběh-simulace-v-reálném-čase)). Kromě toho jsou k dispozici metody `PinMode`, `DigitalRead`, `DigitalWrite` a `Millis`, které [se chovají podle očekávání](https://www.arduino.cc/reference/en/).
+Jako jednotné rozhraní k programování robota slouží třída `RobotBase` v `CoreLibrary`. Assembly s kódem robota by mělo obsahovat jednoho veřejného potomka této třídy. Ten musí implementovat metody `Setup` a `Loop` (používají se velmi podobně jako odpovídající funkce platformy Arduino), dále pak vlastnosti `MotorsMicroseconds` a `FirstSensorPin`. Je možné rovněž implementovat vlastnost `InternalState` (o té [viz níže](#průběh-simulace-v-reálném-čase)). Kromě toho jsou k dispozici metody `PinMode`, `DigitalRead`, `DigitalWrite` a `Millis`, které [se chovají podle očekávání](https://www.arduino.cc/reference/en/).
 
 #### Setup a Loop
 
@@ -41,6 +41,10 @@ Metoda `Setup` se volá při vytváření instance robota, tedy při jeho umíst
 Vlastnost `FirstSensorPin` určuje, na jakých pinech se bude načítat vstup ze senzorů. Těch je dohromady pět, hodnoty z nejlevějšího jsou dostupné na pinu s číslem odpovídajícím hodnotě `FirstSensorPin`, hodnoty z druhého senzoru zleva jsou na následujícím pinu atd. Čteme-li na pinu hodnotu `false`, snímá senzor černou (tmavou) barvu, čteme-li `true`, snímá bílou (světlou) barvu.
 
 Aby bylo jasné, jak se má *virtuální robot* po dráze pohybovat, pro zjištění rychlostí motorů se používá vlastnost `MotorsMicroseconds`. Ta je typu `MotorsState`, což je struktura, která funguje vlastně jako uspořádaná dvojice. První hodnotou je šířka impulsu v mikrosekundách pro PWM levého servomotoru. Druhá hodnota odpovídá pravému motoru. Při 1500 mikrosekundách se motor netočí. Vyšší hodnoty jím otáčejí na jednu stranu, nižší na druhou. Pro jednoduchost je převod mezi šířkou impulzu a rychlostí motoru lineární a nemá omezený rozsah hodnot – [u reálných servomotorů je to však odlišné](https://learn.parallax.com/tutorials/robot/shield-bot/robotics-board-education-shield-arduino/chapter-3-assemble-and-test-5).
+
+#### Třída Servo
+
+Třídu `Servo` z `CoreLibrary` není nutné použít, ale může se hodit jako náhrada třídy `Servo` ze stejnojmenné Arduino knihovny.
 
 ### Číselná nastavení
 
@@ -90,6 +94,7 @@ Poznámka: Jedna iterace odpovídá jednomu volání metody `MoveNext`. Ta v sob
 - SimulationLive
     - IterationLimit – počet iterací, po němž dojde k automatickému pozastavení simulace (počítá se od posledního spuštění simulace)
     - IterationIntervalMs – interval mezi jednotlivými iteracemi
+    - TimeCorrectionIterations – počet iterací, po němž se provede korekce času (aby se čas robota nezpožďoval oproti skutečnému času simulace)
 - SimulationParallel
     - základní konfigurace
         - MinPointDistanceMs – při vykreslování trajektorií je tohle minimální vzdálenost (v milisekundách) mezi vykreslovanými body
@@ -107,7 +112,7 @@ Poznámka: Jedna iterace odpovídá jednomu volání metody `MoveNext`. Ta v sob
         - RandomPosition
         - RandomSensors
         - RandomMotors
-- SimulatedRobot – kromě SensorDistancesY lze tyto hodnoty nepřímo ovlivnit z GUI
+- SimulatedRobot – kromě SensorDistancesY lze tyto hodnoty nepřímo ovlivnit z grafického rozhraní aplikace
     - WheelDistance – vzdálenost koleček robota (šířka osy) v pixelech
     - SpeedCoefficient – koeficient rychlosti v pixelech za sekundu
     - SensorDistancesY – vzdálenosti senzorů od podélné osy procházející středem robota (tedy vlastně Y souřadnice)
@@ -116,5 +121,33 @@ Výchozí hodnoty formulářových polí, s nimiž je program spouštěn, lze ko
 
 ## Vývojová dokumentace
 
-- WinExe
-- konstanty
+### Struktura
+
+Projekt sestává ze čtyř částí.
+
+- SimulatorApp – hlavní aplikace s grafickým uživatelským rozhraním umožňující spouštět simulace a zobrazovat jejich výsledky
+- UserDefinedRobot – obsahuje vzorový kód robota (assemblies s roboty však mohou pocházet i odjinud)
+- CoreLibrary – prostřednictvím typu RobotBase stanovuje rozhraní umožňující hlavní aplikaci načítat různá assemblies s roboty; dále pak poskytuje pomocnou třídu Servo
+- TestSuite – sada testů pro třídy BoolBitmap a SimulatedRobot
+
+### Vztah mezi C\# a C++ kódem
+
+Jedním z mých cílů bylo, aby se kód robota v C# mohl co nejvíce blížit kódu napsaném v C++, který lze spustit na hardwaru reálného robota. Rozhodl jsem se však zachovat jmenné konvence C#, takže např. názvy metod začínají velkými písmeny. Dalším výrazným rozdílem je globálnost základních funkcí (`digitalRead` aj.), ty jsem učinil veřejnými instančními metodami třídy `RobotBase`.
+
+Třída `RobotBase` tedy obsahuje veřejné členy, ty jsou dostupné v potomkovi a některé z nich se používají při simulaci. Dále pak obsahuje soukromé členy, k některým z nich se přistupuje při simulaci pomocí reflection. Objektový návrh je tedy poměrně bezpečný.
+
+### Třídy v SimulatorApp
+
+- MainWindow – slouží k vykreslování uživatelského rozhraní a ke zpracovávání akcí uživatele
+- AppState – spravuje vnitřní stav aplikace, zajišťuje jeho oddělení od stavu uživatelského rozhraní
+- Map – zde je načten obrázek s dráhou, zajišťuje jeho vykreslení
+- BoolBitmap – wrapper pro SKBitmap, poskytuje hodnoty senzorům, umožňuje cachování a rychlou duplikaci při paralelní simulaci
+- SimulationLive – slouží ke spuštění a ovládání „živé“ simulace
+- SimulationParallel – umožňuje spuštění paralelní simulace
+- SimulatedRobot – „robot v prostředí“, je to wrapper pro konkrétního potomka RobotBase, udržuje informace o jeho poloze a stavu vůči simulaci
+- DummyRobot – potomek třídy RobotBase, nic nedělá; je použit jako záloha, pokud uživatel nedodá vlastního robota, aby bylo možné robota umístit na dráhu
+- RobotException – zabalí se do ní výjimka vyhozená z vnitřního kódu robota, aby se mohla zpracovat na vyšší úrovni
+
+### Poznámka ke spuštění aplikace
+
+`SimulatorApp` lze také sestavit příkazem `dotnet build` a následně spustit pomocí vzniklého spustitelného souboru (na OS Windows to bude `SimulatorApp.exe`). Pokud se toto spuštění neprovádí z konzole, může se kromě grafického rozhraní otevřít také okno s konzolí. Tomu lze zabránit tak, že se v souboru `SimulatorApp/SimulatorApp.csproj` do tagu `OutputType` místo `Exe` napíše `WinExe`. Tím se ale rovněž znemožní vypisování do konzole.
