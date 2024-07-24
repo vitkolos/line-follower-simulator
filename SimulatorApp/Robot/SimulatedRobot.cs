@@ -135,10 +135,7 @@ public class SimulatedRobot {
 
     private void CheckSensors() {
         for (int i = 0; i < RobotBase.SensorsCount; i++) {
-            var sensorPosition = new SensorPosition {
-                X = (float)(Position.X + _robotConfig.Size * _sensorDistances[i] * Math.Cos(Position.Rotation + _sensorAngles[i])),
-                Y = (float)(Position.Y + _robotConfig.Size * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
-            };
+            SensorPosition sensorPosition = GetSensorPosition(i);
             // #coordinates
             int pixelX = (int)Math.Round(sensorPosition.X / _mapScale);
             int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)Math.Round(sensorPosition.Y / _mapScale);
@@ -160,6 +157,13 @@ public class SimulatedRobot {
 
             SensorPositions[i] = sensorPosition;
         }
+    }
+
+    private SensorPosition GetSensorPosition(int i) {
+        return new SensorPosition {
+            X = (float)(Position.X + _robotConfig.Size * _sensorDistances[i] * Math.Cos(Position.Rotation + _sensorAngles[i])),
+            Y = (float)(Position.Y + _robotConfig.Size * _sensorDistances[i] * Math.Sin(Position.Rotation + _sensorAngles[i]))
+        };
     }
 
     private static RobotPosition GetRobotPosition(RobotPosition oldPosition, MotorsState motorsMicroseconds, int elapsedMillis, float robotScale, float speedScale) {

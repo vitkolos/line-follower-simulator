@@ -159,6 +159,8 @@ V konstruktoru se pomocí reflection zpřístupňují některé soukromé členy
 
 Metoda `GetRobotPosition` slouží k výpočtu změny pozice robota s pohonem typu „differential drive“. Použil jsem vzorec [z tohoto paperu](https://rossum.sourceforge.net/papers/DiffSteer/DiffSteer.html#d5), konkrétně \[5].
 
+Kromě pozice robota je také potřeba také udržovat pozice senzorů. K tomu slouží metoda `GetSensorPosition`, pro snížení výpočetní náročnosti se v ní používají předgenerovaná pole `_sensorDistances` a `_sensorAngles` popisující relativní polohu senzorů vůči robotovi.
+
 Jelikož i vnitřní kód robota může vyvolat výjimku, ke spouštění takového kódu se používají metody `SafelyRun` a `SafelyGetNewRobot`, které případnou výjimku zabalí do `RobotException`. Ta je pak zachycena v `AppState` a zobrazena v chybovém okně.
 
 ### Souřadnice
