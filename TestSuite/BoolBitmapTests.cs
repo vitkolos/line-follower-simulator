@@ -63,7 +63,7 @@ public class BoolBitmapTests {
         var bitmap = new SKBitmap(10, 20);
         var boolBitmap = new BoolBitmap(bitmap);
 
-        Assert.Throws<IndexOutOfRangeException>(() => boolBitmap[x, y]);
+        Assert.Throws<ArgumentOutOfRangeException>(() => boolBitmap[x, y]);
     }
 
     [Theory]

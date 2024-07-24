@@ -68,7 +68,7 @@ public class BoolBitmap : IDisposable {
             if (x >= 0 && x < Width && y >= 0 && y < Height) {
                 return Cached ? _boolArray[y * Width + x] : GetPixel(x, y);
             } else {
-                throw new IndexOutOfRangeException("bitmap does not contain this pixel");
+                throw new ArgumentOutOfRangeException("bitmap does not contain this pixel");
             }
         }
     }
