@@ -58,6 +58,7 @@ class SimulationLive {
         int differenceMs = 0;
         int iterationTimeout = IterationIntervalMs;
         int step = 1;
+        int gap = 0;
 
         for (int i = 0; i < IterationLimit; i++) {
             await Task.Delay(iterationTimeout);
@@ -75,10 +76,17 @@ class SimulationLive {
                 DateTime currentTime = DateTime.Now;
                 int realMs = (int)(currentTime - startTime).TotalMilliseconds;
                 differenceMs = realMs - virtualMs;
-                step = (differenceMs / TimeCorrectionIterations) + 1;
+
+                if (differenceMs > 0) {
+                    step = (differenceMs / TimeCorrectionIterations) + 1;
+                    gap = TimeCorrectionIterations / differenceMs;
+                } else {
+                    step = 1;
+                    gap = 0;
+                }
             }
 
-            if (differenceMs >= step) {
+            if (differenceMs >= step && i % (gap + 1) == 0) {
                 differenceMs -= step;
                 iterationTimeout = IterationIntervalMs - step;
             } else {
