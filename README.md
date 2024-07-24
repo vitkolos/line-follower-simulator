@@ -173,6 +173,10 @@ Paralelizaci paralelní simulace zajišťuje metoda `Parallel.For`. Aby ji však
 
 Aby paralelní simulace dávala nějaký smysl, působí na roboty náhodné jevy podobné těm, které se mohou vyskytovat v reálném světě (chybovost senzorů, prokluzování koleček, odlišná počáteční poloha, rozdílné intervaly spouštění funkce `loop`). V konstruktoru `SimulationParallel` se generuje seed, od nějž se odvíjí veškerá náhodnost v dané simulaci, takže v případě potřeby lze aplikaci upravit tak, aby bylo možná seed získat a zafixovat.
 
+### Volba frameworku
+
+Aplikaci jsem původně vytvořil pomocí WPF, následně jsem však přešel na framework Avalonia, aby byl program multiplatformní. Z toho vyplývá také volba balíčku SkiaSharp pro práci s bitmapou a rovněž použití balíčku MessageBox.Avalonia pro zobrazování dialogových oken.
+
 ### Poznámka ke spuštění aplikace
 
 `SimulatorApp` lze také sestavit příkazem `dotnet build` a následně spustit pomocí vzniklého spustitelného souboru (na OS Windows to bude `SimulatorApp.exe`). Pokud se toto spuštění neprovádí z konzole, může se kromě grafického rozhraní otevřít také okno s konzolí. Tomu lze zabránit tak, že se v souboru `SimulatorApp/SimulatorApp.csproj` do tagu `OutputType` místo `Exe` napíše `WinExe`. Tím se ale rovněž znemožní vypisování do konzole.
