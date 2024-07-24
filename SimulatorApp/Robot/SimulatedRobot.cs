@@ -22,17 +22,17 @@ public class SimulatedRobot {
     private readonly Action<int> _addMillis;
     private readonly PMode[] _pinModes;
     private readonly bool[] _pinValues;
-    private readonly BoolBitmap _map;
+    private readonly BoolBitmap _bitmap;
     private readonly RobotConfig _robotConfig;
     private readonly float _mapScale;
     private readonly float[] _sensorAngles = new float[RobotBase.SensorsCount];
     private readonly float[] _sensorDistances = new float[RobotBase.SensorsCount];
 
-    public SimulatedRobot(RobotBase robot, RobotSetup robotSetup, BoolBitmap map, float mapScale, Random? random = null) {
+    public SimulatedRobot(RobotBase robot, RobotSetup robotSetup, BoolBitmap bitmap, float mapScale, Random? random = null) {
         Robot = robot;
         Random = random;
         Position = robotSetup.Position;
-        _map = map;
+        _bitmap = bitmap;
         _mapScale = mapScale;
         _robotConfig = robotSetup.Config;
         _positionHistory = [new PositionHistoryItem(robotSetup.Position, 0)];
@@ -138,12 +138,12 @@ public class SimulatedRobot {
             SensorPosition sensorPosition = GetSensorPosition(i);
             // #coordinates
             int pixelX = (int)Math.Round(sensorPosition.X / _mapScale);
-            int pixelY = Math.Max(_map.Width, _map.Height) - 1 - (int)Math.Round(sensorPosition.Y / _mapScale);
+            int pixelY = Math.Max(_bitmap.Width, _bitmap.Height) - 1 - (int)Math.Round(sensorPosition.Y / _mapScale);
             // Math.Max returns "canvas height"
 
-            if (pixelX >= 0 && pixelY >= 0 && pixelX < _map.Width && pixelY < _map.Height) {
+            if (pixelX >= 0 && pixelY >= 0 && pixelX < _bitmap.Width && pixelY < _bitmap.Height) {
                 // returns true for white, false for black
-                _pinValues[Robot.FirstSensorPin + i] = _map[pixelX, pixelY];
+                _pinValues[Robot.FirstSensorPin + i] = _bitmap[pixelX, pixelY];
             } else {
                 // "table" is white
                 _pinValues[Robot.FirstSensorPin + i] = true;
