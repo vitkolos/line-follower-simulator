@@ -106,10 +106,11 @@ class SimulationLive {
             var control = new Label {
                 MinWidth = 100,
                 Padding = new Thickness(5),
-                Margin = new Thickness(5, 4),
+                Margin = new Thickness(5, 0),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 BorderBrush = Brushes.LightGray,
-                BorderThickness = new Thickness(1)
+                BorderThickness = new Thickness(1),
+                VerticalAlignment = VerticalAlignment.Center
             };
             var pc = new PinControl(pin, true, control);
             control.Tag = pc;
@@ -134,7 +135,7 @@ class SimulationLive {
         }
 
         _internalStateControl.Padding = new Thickness(5);
-        _internalStateControl.Margin = new Thickness(5);
+        _internalStateControl.Margin = new Thickness(5, 0);
         _internalStateContainer.Children.Add(_internalStateControl);
     }
 
