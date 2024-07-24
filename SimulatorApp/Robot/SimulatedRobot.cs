@@ -46,9 +46,9 @@ public class SimulatedRobot {
 
         PrepareSensorPositions(_robotConfig.SensorDistance);
 
-        Robot.Setup();
+        SafelyRun(Robot.Setup);
         CheckSensors();
-        Robot.Loop();
+        SafelyRun(Robot.Loop);
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public class SimulatedRobot {
         CheckSensors();
 
         // loop
-        Robot.Loop();
+        SafelyRun(Robot.Loop);
     }
 
     public IReadOnlyList<PositionHistoryItem> GetPositionHistory() => _positionHistory;
@@ -94,6 +94,22 @@ public class SimulatedRobot {
             _pinValues[pin] = !down;
         } else {
             throw new InvalidOperationException("this pin is not an InputPullup");
+        }
+    }
+
+    public static RobotBase SafelyGetNewRobot(Type robotType) {
+        try {
+            return (RobotBase)Activator.CreateInstance(robotType)!;
+        } catch (TargetInvocationException exception) {
+            throw new RobotException("constructor", exception.InnerException ?? exception);
+        }
+    }
+
+    private static void SafelyRun(Action action) {
+        try {
+            action();
+        } catch (Exception exception) {
+            throw new RobotException(action.Method.Name, exception);
         }
     }
 

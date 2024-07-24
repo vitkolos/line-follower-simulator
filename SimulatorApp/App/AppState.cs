@@ -59,6 +59,13 @@ class AppState {
         }).ShowWindowDialogAsync(_window);
     }
 
+    private void ReportRobotException(RobotException robotException) {
+        Exception innerException = robotException.InnerException!;
+        string message = innerException.GetType().Name + " was thrown in the " + robotException.Message
+            + " method of your robot:" + Environment.NewLine + Environment.NewLine + innerException.ToString();
+        ShowMessageBox("Robot Exception", message);
+    }
+
     public async void LoadMap(string imagePath, float zoom, float size, ProgressBar progressBar) {
         _simulationLive?.Dispose(); // prevents bitmap reading conflicts
         _simulationLive = null;
@@ -116,18 +123,27 @@ class AppState {
         _simulationLive?.Dispose();
         _simulationLive = null;
 
-        if (Map is not null) {
-            _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _internalStateContainer);
-            _simulationLive.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
+        try {
+            if (Map is not null) {
+                _simulationLive = new SimulationLive(_canvas, Map, _robotType, RobotSetup, _internalStateContainer);
+                _simulationLive.StateChange += running => _stateButton.Content = running ? "Pause" : "Run";
+            }
+        } catch (RobotException exception) {
+            ReportRobotException(exception);
         }
     }
 
-    public void ToggleSimulation() {
+    public async void ToggleSimulation() {
         if (_simulationLive is not null) {
             if (LiveSimulationRunning) {
                 _simulationLive.Pause();
             } else {
-                _simulationLive.Run();
+                try {
+                    await _simulationLive.Run();
+                } catch (RobotException exception) {
+                    ReportRobotException(exception);
+                    _simulationLive.Pause();
+                }
             }
         }
     }
@@ -167,10 +183,15 @@ class AppState {
             // simulation can be cancelled by setting to null, therefore we have to check
             TrajectoryButtonsChange(VisibleTrajectories);
 
-            await Task.Run(() => {
-                _simulationParallel?.Prepare();
-                _simulationParallel?.Run();
-            });
+            try {
+                await Task.Run(() => {
+                    _simulationParallel?.Prepare();
+                    _simulationParallel?.Run();
+                });
+            } catch (RobotException exception) {
+                ReportRobotException(exception);
+                _simulationParallel = null;
+            }
 
             if (_simulationParallel is null) {
                 _oldTrajectories = [];

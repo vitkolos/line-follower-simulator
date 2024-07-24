@@ -60,7 +60,7 @@ class SimulationParallel {
         for (int i = 0; i < RobotCount; i++) {
             if (_canceled) { break; }
 
-            var robot = (RobotBase)Activator.CreateInstance(_robotType)!;
+            RobotBase robot = SimulatedRobot.SafelyGetNewRobot(_robotType);
             var robotRng = new Random(_random.Next());
             var modifiedSetup = RandomPosition ? new RobotSetup {
                 Config = _robotSetup.Config,
@@ -76,7 +76,15 @@ class SimulationParallel {
     }
 
     public void Run() {
-        Parallel.For(0, RobotCount, RunRobotByIndex);
+        try {
+            Parallel.For(0, RobotCount, RunRobotByIndex);
+        } catch (AggregateException exception) {
+            if (exception.InnerExceptions.All(innerException => innerException is RobotException)) {
+                throw exception.InnerExceptions.First();
+            } else {
+                throw;
+            }
+        }
     }
 
     private void RunRobotByIndex(int index) => RunRobot(_simulatedRobots[index]);

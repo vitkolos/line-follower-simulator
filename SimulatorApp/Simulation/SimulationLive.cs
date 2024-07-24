@@ -41,7 +41,7 @@ class SimulationLive {
         _canvas = canvas;
         _map = map;
         _internalStateContainer = internalStateContainer;
-        var robot = (RobotBase)Activator.CreateInstance(robotType)!;
+        RobotBase robot = SimulatedRobot.SafelyGetNewRobot(robotType);
         _simulatedRobot = new SimulatedRobot(robot, robotSetup, _map.BoolBitmap, _map.Scale);
         PrepareIcons(robotSetup.Config.Size, robotSetup.Config.SensorDistance);
         RedrawRobot();
@@ -49,7 +49,7 @@ class SimulationLive {
         ShowInternalState();
     }
 
-    public async void Run() {
+    public async Task Run() {
         ObjectDisposedException.ThrowIf(_disposed, this);
         Running = true;
 
