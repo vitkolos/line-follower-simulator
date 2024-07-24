@@ -176,6 +176,7 @@ public class SimulatedRobot {
                 Rotation = oldPosition.Rotation
             };
         } else {
+            // https://rossum.sourceforge.net/papers/DiffSteer/DiffSteer.html#d5 see [5]
             float modifiedWheelDistance = robotScale * WheelDistance;
             float rotationChange = (rightSpeed - leftSpeed) * elapsedSeconds / modifiedWheelDistance;
             float turnRadius = modifiedWheelDistance * (rightSpeed + leftSpeed) / (2 * (rightSpeed - leftSpeed));

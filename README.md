@@ -146,7 +146,29 @@ Třída `RobotBase` tedy obsahuje veřejné členy, ty jsou dostupné v potomkov
 - SimulationParallel – umožňuje spuštění paralelní simulace
 - SimulatedRobot – „robot v prostředí“, je to wrapper pro konkrétního potomka RobotBase, udržuje informace o jeho poloze a stavu vůči simulaci
 - DummyRobot – potomek třídy RobotBase, nic nedělá; je použit jako záloha, pokud uživatel nedodá vlastního robota, aby bylo možné robota umístit na dráhu
-- RobotException – zabalí se do ní výjimka vyhozená z vnitřního kódu robota, aby se mohla zpracovat na vyšší úrovni
+- RobotException – zabalí se do ní výjimka vyvolaná z vnitřního kódu robota, aby se mohla zpracovat na vyšší úrovni
+
+### SimulatedRobot
+
+Třída `SimulatedRobot` je na pomezí mezi simulací (simulační třídou) a robotem (vnitřní logikou), uchovává stav robota v prostředí simulace.
+
+V konstruktoru se pomocí reflection zpřístupňují některé soukromé členy třídy `RobotBase`, konkrétně metoda `AddMillis` a pole `_pinModes` a `_pinValues`. Pomocí `AddMillis` se jakoby posouvají vnitřní hodiny robota o daný počet milisekund vpřed. Dvě pole pak slouží k manipulaci s hodnotami jednotlivých pinů.
+
+Metoda `GetRobotPosition` slouží k výpočtu změny pozice robota s pohonem typu „differential drive“. Použil jsem vzorec [z tohoto paperu](https://rossum.sourceforge.net/papers/DiffSteer/DiffSteer.html#d5), konkrétně \[5].
+
+Jelikož i vnitřní kód robota může vyvolat výjimku, ke spouštění takového kódu se používají metody `SafelyRun` a `SafelyGetNewRobot`, které případnou výjimku zabalí do `RobotException`. Ta je pak zachycena v `AppState` a zobrazena v chybovém okně.
+
+### Souřadnice
+
+Prvky uživatelského rozhraní a obrázky obvykle používají takový systém souřadnic, kde počátek (0, 0) je v levém horním rohu a kladný směr je vpravo/dole. Jelikož je mi však bližší soustava s počátkem vlevo dole a kladným směrem doprava/nahoru, rozhodl jsem se souřadnice převádět na tuto soustavu. Místa, kde se tento převod provádí, jsou v komentáři označeny jako `#coordinates`.
+
+### Specifika simulací
+
+Vzhledem k časování „živé“ simulace pomocí metody `Task.Delay`, která nezaručuje přesný čas, docházelo k tomu, že interní čas robota běžel pomaleji než ten reálný. Proto jsem implementoval korekční mechanismus, který zajišťuje, že se opoždění drží v jistých mezích.
+
+Paralelizaci paralelní simulace zajišťuje metoda `Parallel.For`. Aby ji však bylo možné použít, musí každý robot disponovat vlastní bitmapou, kterou čte svými senzory. Jelikož vytváření mnoha kopií bitmapy je poměrně časově náročné, implementoval jsem vlastní třídu `BoolBitmap`, která v základu zprostředkovává „hezké“ rozhraní pro senzory (takže ji používá i neparalelní „živá“ simulace), umožňuje však také jednorázové načtení celé bitmapy a její uložení do pole booleovských hodnot. Toto pole pak lze efektivně duplikovat, takže není problém, aby měl každý z paralelních robotů vlastní instanci `BoolBitmap`.
+
+Aby paralelní simulace dávala nějaký smysl, působí na roboty náhodné jevy podobné těm, které se mohou vyskytovat v reálném světě (chybovost senzorů, prokluzování koleček, odlišná počáteční poloha, rozdílné intervaly spouštění funkce `loop`). V konstruktoru `SimulationParallel` se generuje seed, od nějž se odvíjí veškerá náhodnost v dané simulaci, takže v případě potřeby lze aplikaci upravit tak, aby bylo možná seed získat a zafixovat.
 
 ### Poznámka ke spuštění aplikace
 
