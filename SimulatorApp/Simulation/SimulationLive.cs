@@ -11,6 +11,7 @@ namespace SimulatorApp;
 class SimulationLive {
     private const int IterationLimit = 100_000;
     private const int IterationIntervalMs = 6;
+    private const int TimeCorrectionIterations = 512;
 
     private readonly Canvas _canvas;
     private readonly Map _map;
@@ -52,16 +53,37 @@ class SimulationLive {
         ObjectDisposedException.ThrowIf(_disposed, this);
         Running = true;
 
-        for (int i = 0; i < IterationLimit; i++) {
-            await Task.Delay(IterationIntervalMs);
+        DateTime startTime = DateTime.Now;
+        int virtualMs = 0;
+        int differenceMs = 0;
+        int iterationTimeout = IterationIntervalMs;
+        int step = 1;
 
-            if (!Running) {
-                break;
-            }
+        for (int i = 0; i < IterationLimit; i++) {
+            await Task.Delay(iterationTimeout);
+
+            if (!Running) { break; }
 
             _simulatedRobot.MoveNext(IterationIntervalMs);
             ShowInternalState();
             RedrawRobot();
+
+            // prevent time shift
+            virtualMs += IterationIntervalMs;
+
+            if (i % TimeCorrectionIterations == 0) {
+                DateTime currentTime = DateTime.Now;
+                int realMs = (int)(currentTime - startTime).TotalMilliseconds;
+                differenceMs = realMs - virtualMs;
+                step = (differenceMs / TimeCorrectionIterations) + 1;
+            }
+
+            if (differenceMs >= step) {
+                differenceMs -= step;
+                iterationTimeout = IterationIntervalMs - step;
+            } else {
+                iterationTimeout = IterationIntervalMs;
+            }
         }
 
         Running = false;
