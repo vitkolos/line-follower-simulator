@@ -76,7 +76,7 @@ K ovládání paralelní simulace slouží jedno tlačítko – to nejprve umož
 
 Kliknutím myší na libovolné místo na plátně se souřadnice daného bodu načtou do konfiguračního formuláře. Pokud v dané chvíli simulace neprobíhá, tato volba souřadnic se rovnou potvrdí. Tehdy lze rovněž měnit natočení robota – pokud při stisknutém levém nebo pravém tlačítku myši uživatel otáčí kolečkem myši.
 
-#### Průběh simulace v reálném čase
+#### Průběh simulace v reálném čase
 
 V průběhu „živé“ simulace se robot pohybuje po dráze (respektive po celé ploše okna). Pět kroužků před robotem odpovídá jednotlivým senzorům – kroužek je červený, pokud snímá tmavou (černou) barvu, jinak je zelený. Diagram robota je rozdělen příčnou čarou, to je osa kol (její střed je rovněž vyznačen).
 
